@@ -1,4 +1,4 @@
-from pandas import read_csv, concat, merge, DataFrame
+from pandas import read_csv, concat, merge, DataFrame, to_datetime
 import numpy as np
 
 def load_to_df(input_filenames, output_filename, prefix = ''):
@@ -25,8 +25,10 @@ def load_to_df(input_filenames, output_filename, prefix = ''):
 
     # Load groundtruth data
     groundtruth_data = read_csv(prefix + output_filename)
-    # Drop all lights off (-1) values from groundtruth
-    groundtruth_data = groundtruth_data.drop(groundtruth_data[groundtruth_data['Standing'] == -1].index)
+    # Convert timestamps to unixtime
+    groundtruth_data['dt'] = to_datetime(groundtruth_data['Timestamps'], format='%Y-%m-%d %H:%M:%S')
+    groundtruth_data['Unixtime'] = groundtruth_data['dt'].astype(int)
+    groundtruth_data['Unixtime'] = groundtruth_data['Unixtime'].div(10**9)
 
     # Standardize timestamps to every 1 second
     # Get start and end timestamps
@@ -68,7 +70,7 @@ def prepare_uwb_data(uwb_filenames, prefix=''):
     return uwb_df
 
 
-def create_rolling_window_data(input_df, groundtruth_df, window_size = 3, features = ['accel_x_mps2','accel_y_mps2','accel_z_mps2']):
+def create_rolling_window_data(input_df, groundtruth_df, window_size = 5, features = ['accel_x_mps2','accel_y_mps2','accel_z_mps2']):
     # Drop all columns except the features we want to train on and timestamps for data matching
     input_df = input_df.loc[:, input_df.columns.intersection(features + ['timestamp'])]
 
@@ -76,8 +78,8 @@ def create_rolling_window_data(input_df, groundtruth_df, window_size = 3, featur
    # Use 3 and 2 in case there is a problem with the first index
     base_time = groundtruth_df['Unixtime'][3] - groundtruth_df['Unixtime'][2]
 
-    # Make it a minute
-    base_time = base_time * 2
+    # Make it five minutes
+    base_time = base_time * 5
 
     print("Base time is: " + str(base_time))
     window = base_time * window_size
@@ -89,7 +91,7 @@ def create_rolling_window_data(input_df, groundtruth_df, window_size = 3, featur
         # Groundtruth is given in one minute time windows, so split input data every minute
         groundtruth_data_for_time_window = groundtruth_df.loc[(groundtruth_df['Unixtime'] >= start_time) & (
             groundtruth_df['Unixtime'] < end_time)]
-        labels = groundtruth_data_for_time_window['Standing'].tolist()
+        labels = groundtruth_data_for_time_window['Labels'].tolist()
 
         # Check to make sure this isn't a transition period
         if len(set(labels)) != 1:

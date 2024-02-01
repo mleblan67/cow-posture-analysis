@@ -176,6 +176,105 @@ def run_single_day_pooling_experiment(prefix='converted_data/', repeats=10):
     # summarize results
     summarize_results(scores)
 
+def run_pooling_on_single_tag_single_day(prefix='converted_data/', repeats=10):
+    # The tag numbers we want to train on
+    tags = [1,2,3,4,5,6,7,8,9,10]
+    # The tag number we want to test on
+    test_tag = 7
+
+    # Array of all the training data we load in from each tag
+    train_inputs = []
+    train_groundtruths = []
+
+    # Array of all the testing data we load in from each tag
+    test_inputs = []
+    test_groundtruths = []
+
+    # Load in all the data
+    for tag in tags:
+        # Build folder path
+        data_dir = prefix + 'T' + str(tag).zfill(2) + '/'
+
+        # Get all sensor data files for this folder
+        filepaths = os.listdir(data_dir)
+        filepaths = [data_dir + file for file in filepaths if file.startswith('sensor_data') and file.endswith('.csv')]
+        filepaths.sort() # Make sure they're in order for processing
+
+
+        # Get data for only one day if it's the test tag
+        if tag == test_tag:
+            filepaths = [data_dir + 'sensor_data_T' + str(tag).zfill(2)+'_0725.csv']
+        
+
+        # Get groundtruth path
+        groundtruth_path = data_dir + 'T' + str(tag).zfill(2) + '_groundtruths.csv'
+
+        # Load in the data
+        input_df, groundtruth_df = load_to_df(filepaths, groundtruth_path)
+
+        # Add to array
+        if tag != test_tag:
+            train_inputs.append(input_df)
+            train_groundtruths.append(groundtruth_df)
+        else:
+            test_inputs.append(input_df)
+            test_groundtruths.append(groundtruth_df)
+
+        print("Loaded Tag " + str(tag))
+
+    # TRAINING DATA: Create X and y window data
+    X_train = []
+    y_train = []
+
+    # Go through all tags that aren't the tes tag
+    for tag, input_df, groundtruth_df in zip([tag for tag in tags if tag != test_tag], train_inputs, train_groundtruths):
+        # Create rolling window
+        X, y = create_rolling_window_data(input_df, groundtruth_df)
+
+        # Add to data arrays to combine all data
+        X_train += X
+        y_train += y
+
+        print("Created sliding window for Tag " + str(tag))
+
+    y_train = to_categorical(y_train)
+    X_train = asarray(X_train)
+
+    # TRAINING DATA: Create X and y window data
+    X_test = []
+    y_test = []
+
+    for tag, input_df, groundtruth_df in zip([test_tag], test_inputs, test_groundtruths):
+        # Create rolling window
+        X, y = create_rolling_window_data(input_df, groundtruth_df)
+
+        # Add to data arrays to combine all data
+        X_test += X
+        y_test += y
+
+        print("Created sliding window for Tag " + str(tag))
+
+    y_test = to_categorical(y_test)
+    X_test = asarray(X_test)
+
+    # Train/Test split for data
+    print("Training data shape: (X) (y)")
+    print(X_train.shape, y_train.shape)
+    print("Testing data shape: (X) (y)")
+    print(X_test.shape, y_test.shape)
+
+    print('Data loaded! Ready to train')
+
+    # repeat experiment
+    scores = list()
+    for r in range(repeats):
+        score = build_model(X_train, y_train, X_test, y_test)
+        score = score * 100.0
+        print('>#%d: %.3f' % (r+1, score))
+        scores.append(score)
+    # summarize results
+    summarize_results(scores)
+
     
 
-run_single_day_pooling_experiment()
+run_pooling_on_single_tag_single_day()
