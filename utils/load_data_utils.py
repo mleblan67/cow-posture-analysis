@@ -30,6 +30,12 @@ def load_to_df(input_filenames, output_filename, prefix = ''):
     groundtruth_data['Unixtime'] = groundtruth_data['dt'].astype(int)
     groundtruth_data['Unixtime'] = groundtruth_data['Unixtime'].div(10**9)
 
+
+    # Fix the offset
+    offset = 3600*5
+
+    groundtruth_data['Unixtime'] = groundtruth_data['Unixtime'] + offset
+
     # Standardize timestamps to every 1 second
     # Get start and end timestamps
     # start_timestamp = groundtruth_data.iloc[0]['Unixtime']

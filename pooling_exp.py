@@ -178,7 +178,8 @@ def run_single_day_pooling_experiment(prefix='converted_data/', repeats=10):
 
 def run_pooling_on_single_tag_single_day(prefix='converted_data/', repeats=10):
     # The tag numbers we want to train on
-    tags = [1,2,3,4,5,6,7,8,9,10]
+    # tags = [1,2,3,4,5,6,7,8,9,10]
+    tags = [7,8,9,10]
     # The tag number we want to test on
     test_tag = 7
 
