@@ -214,8 +214,8 @@ def run_pooling_on_single_tag_single_day(prefix='converted_data/', repeats=10):
         print(f"Created Sliding window for tag {tag} \n")
 
         # Add to array
-        train_inputs.append(input_df)
-        train_groundtruths.append(groundtruth_df)
+        train_inputs.append(X)
+        train_groundtruths.append(y)
 
     # Load in all the testing (just one day)
     for tag in test_tags:
@@ -239,8 +239,8 @@ def run_pooling_on_single_tag_single_day(prefix='converted_data/', repeats=10):
         print(f"Created Sliding window for tag {tag} \n")
 
         # Add to array
-        test_inputs.append(input_df)
-        test_groundtruths.append(groundtruth_df)
+        test_inputs.append(X)
+        test_groundtruths.append(y)
 
 
 
@@ -260,18 +260,18 @@ def run_pooling_on_single_tag_single_day(prefix='converted_data/', repeats=10):
                 continue
 
             X_train += train_inputs[i]
-            y_train = train_groundtruths[i]
+            y_train += train_groundtruths[i]
         
         # One-hot encoding
         y_train = to_categorical(y_train)
-        # X_train = asarray(X_train)
+        X_train = asarray(X_train)
 
         # Prepare testing data
         X_test = test_inputs[test_tag_i]
         y_test = test_groundtruths[test_tag_i]
 
         y_test = to_categorical(y_test)
-        # X_test = asarray(X_test)
+        X_test = asarray(X_test)
 
 
 
