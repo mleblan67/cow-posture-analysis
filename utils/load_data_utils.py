@@ -32,6 +32,7 @@ def load_to_df(input_filenames, output_filename, prefix = ''):
 
 
     # Fix the offset
+    # Offset is 5 hours
     offset = 3600*5
 
     groundtruth_data['Unixtime'] = groundtruth_data['Unixtime'] + offset
