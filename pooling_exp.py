@@ -5,6 +5,7 @@ from numpy import mean
 from numpy import std
 from numpy import asarray
 from sklearn.model_selection import train_test_split
+from matplotlib import pyplot as plt
 
 from utils.load_data_utils import load_to_df, create_rolling_window_data
 from utils.features_utils import add_svm_feature
@@ -25,8 +26,37 @@ def build_model(trainX, trainy, testX, testy):
     # evaluate model
     _, accuracy = model.evaluate(
         testX, testy, batch_size=batch_size, verbose=0)
-    # TODO: graph accuracies
+    
     return accuracy
+
+def graph_model(trainX, trainy, testX, testy):
+    verbose, epochs, batch_size = 0, 10, 32
+    n_timesteps, n_features, n_outputs = trainX.shape[1], trainX.shape[2], trainy.shape[1]
+    n_batches = trainX.shape[0]
+
+    model = CNN(n_timesteps, n_features, n_outputs)
+    # model = CNN_LSTM(n_timesteps, n_features, n_outputs)
+    # fit network
+    model.fit(trainX, trainy, epochs=epochs,
+              batch_size=batch_size, verbose=verbose)
+    # evaluate model
+    # _, accuracy = model.evaluate(
+    #     testX, testy, batch_size=batch_size, verbose=0)
+    
+    predictions = model.predict(testX)
+
+    testy = [val[0] for val in testy]
+    predictions = [val[0] for val in predictions]
+
+    plt.plot(testy, label = "Groundtruth", color='blue', linestyle='solid')
+    plt.plot(predictions, label = "Prediction", color='red', linestyle='dashed')
+
+    plt.legend()
+    plt.xlabel("Time Frame")
+    plt.ylabel("Standing")
+    
+    plt.savefig('Accuracies.png')
+    # return accuracy
 
 # summarize scores
 def summarize_results(scores):
@@ -182,7 +212,8 @@ def run_pooling_on_single_tag_single_day(prefix='converted_data/', repeats=10):
     # The tag numbers we want to train on
     train_tags = [1,2,3,4,5,6,7,8,9,10]
     # The tag numbers we want to test on
-    test_tags = [1,2,3,4,5,6,7,8,9,10]
+    # test_tags = [1,2,3,4,5,6,7,8,9,10]
+    test_tags = [7]
 
     # Array of all the training data we load in from each tag
     train_inputs = []
@@ -199,7 +230,7 @@ def run_pooling_on_single_tag_single_day(prefix='converted_data/', repeats=10):
 
         # Get all sensor data files for this folder
         filepaths = os.listdir(data_dir)
-        filepaths = [data_dir + file for file in filepaths if file.startswith('sensor_data') and file.endswith('.csv')]
+        filepaths = [data_dir + file for file in filepaths if file.startswith('sensor_data') and file.endswith('0731.csv')]
         filepaths.sort() # Make sure they're in order for processing
         
 
@@ -283,18 +314,21 @@ def run_pooling_on_single_tag_single_day(prefix='converted_data/', repeats=10):
 
         print('Data loaded! Ready to train')
 
-        # repeat experiment
-        scores = list()
-        for r in range(repeats):
-            score = build_model(X_train, y_train, X_test, y_test)
-            score = score * 100.0
-            print('>#%d: %.3f' % (r+1, score))
-            scores.append(score)
-        # summarize results
-        m = summarize_results(scores)
-        accuracies.append(m)
+        # graph exp
+        graph_model(X_train, y_train, X_test, y_test)
 
-    print(f"OVERALL ACCURACY WAS {mean(accuracies)}")
+        # repeat experiment
+    #     scores = list()
+    #     for r in range(repeats):
+    #         score = build_model(X_train, y_train, X_test, y_test)
+    #         score = score * 100.0
+    #         print('>#%d: %.3f' % (r+1, score))
+    #         scores.append(score)
+    #     # summarize results
+    #     m = summarize_results(scores)
+    #     accuracies.append(m)
+
+    # print(f"OVERALL ACCURACY WAS {mean(accuracies)}")
 
     
 

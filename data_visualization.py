@@ -25,7 +25,6 @@ groundtruth_path = data_dir + 'T' + str(tag).zfill(2) + '_groundtruths.csv'
 sensor_df, groundtruth_df = load_to_df(filepaths, groundtruth_path)
 
 
-
 # Graph the sensor data
 ax = sensor_df.plot('timestamp','accel_y_mps2', kind='scatter')
 groundtruth_df.plot('Unixtime', 'Labels', kind='scatter', ax=ax, color='red')
