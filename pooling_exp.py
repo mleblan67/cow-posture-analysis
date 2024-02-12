@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 from utils.load_data_utils import load_to_df, create_rolling_window_data
 from utils.features_utils import add_svm_feature
 from models import CNN, CNN_LSTM
-from keras.utils import to_categorical
+from tensorflow.keras.utils import to_categorical
 
 # Train and evaluate a model
 def build_model(trainX, trainy, testX, testy):
@@ -212,8 +212,7 @@ def run_pooling_on_single_tag_single_day(prefix='converted_data/', repeats=10):
     # The tag numbers we want to train on
     train_tags = [1,2,3,4,5,6,7,8,9,10]
     # The tag numbers we want to test on
-    # test_tags = [1,2,3,4,5,6,7,8,9,10]
-    test_tags = [7]
+    test_tags = [1,2,3,4,5,6,7,8,9,10]
 
     # Array of all the training data we load in from each tag
     train_inputs = []
@@ -227,15 +226,16 @@ def run_pooling_on_single_tag_single_day(prefix='converted_data/', repeats=10):
     for tag in train_tags:
         # Build folder path
         data_dir = prefix + 'T' + str(tag).zfill(2) + '/'
+        groundtruth_dir = 'converted_data/' + 'T' + str(tag).zfill(2) + '/'
 
         # Get all sensor data files for this folder
         filepaths = os.listdir(data_dir)
-        filepaths = [data_dir + file for file in filepaths if file.startswith('sensor_data') and file.endswith('0731.csv')]
+        filepaths = [data_dir + file for file in filepaths if file.startswith('sensor_data') and file.endswith('.csv')]
         filepaths.sort() # Make sure they're in order for processing
         
 
         # Get groundtruth path
-        groundtruth_path = data_dir + 'T' + str(tag).zfill(2) + '_groundtruths.csv'
+        groundtruth_path = groundtruth_dir + 'T' + str(tag).zfill(2) + '_groundtruths.csv'
 
         # Load in the data
         input_df, groundtruth_df = load_to_df(filepaths, groundtruth_path)
@@ -315,20 +315,20 @@ def run_pooling_on_single_tag_single_day(prefix='converted_data/', repeats=10):
         print('Data loaded! Ready to train')
 
         # graph exp
-        graph_model(X_train, y_train, X_test, y_test)
+        # graph_model(X_train, y_train, X_test, y_test)
 
         # repeat experiment
-    #     scores = list()
-    #     for r in range(repeats):
-    #         score = build_model(X_train, y_train, X_test, y_test)
-    #         score = score * 100.0
-    #         print('>#%d: %.3f' % (r+1, score))
-    #         scores.append(score)
-    #     # summarize results
-    #     m = summarize_results(scores)
-    #     accuracies.append(m)
+        scores = list()
+        for r in range(repeats):
+            score = build_model(X_train, y_train, X_test, y_test)
+            score = score * 100.0
+            print('>#%d: %.3f' % (r+1, score))
+            scores.append(score)
+        # summarize results
+        m = summarize_results(scores)
+        accuracies.append(m)
 
-    # print(f"OVERALL ACCURACY WAS {mean(accuracies)}")
+    print(f"OVERALL ACCURACY WAS {mean(accuracies)}")
 
     
 

@@ -1,10 +1,10 @@
-from keras import Input
-from keras.models import Sequential
-from keras.layers import Dense
-from keras.layers import Flatten
-from keras.layers import Dropout
-from keras.layers import Conv1D, LSTM
-from keras.layers import MaxPooling1D
+from tensorflow.keras import Input
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Flatten
+from tensorflow.keras.layers import Dropout
+from tensorflow.keras.layers import Conv1D, LSTM
+from tensorflow.keras.layers import MaxPooling1D
 
 
 '''
