@@ -2,26 +2,31 @@ from pandas import read_csv, concat, merge, DataFrame, to_datetime
 import numpy as np
 
 def load_to_df(input_filenames, output_filename, prefix = ''):
-    # TODO: Take in a folder and load all the files in tha folder
     # Load in the sensor data
     dfs = []
     for filename in input_filenames:
         df = read_csv(prefix + filename)
         dfs.append(df)
     input_data = concat(dfs)
-    # Standardize timestamps to 10 Hz
+
+    '''
+    STANDARDIZE INPUT DATA
+    * Sometimes some timestamps are missing so we want to fill in missing 
+    timestamps to make sure maintain a standard number of samples per minute
+    '''
+    
     # Get start and end timestamps
     start_timestamp = input_data.iloc[0]['timestamp']
     end_timestamp = input_data.iloc[-1]['timestamp']
-    # Generate time steps at the same rate as accel data
-    timestamp_range = np.arange(start_timestamp,end_timestamp+0.1,0.1)
+    # Generate time steps at the same rate as the input data
+    delta = input_data.iloc[1]['timestamp'] - input_data.iloc[0]['timestamp']
+    timestamp_range = np.arange(start_timestamp,end_timestamp+delta,delta)
     timestamp_range = np.round(timestamp_range,1)
     # Add existing data to the full df
     standardized_input = DataFrame(timestamp_range,columns=['timestamp'])
     standardized_input = merge(standardized_input,input_data, how='outer', on='timestamp')
     # Fill the data with ffil
     standardized_input.fillna(method='ffill', inplace=True)
-
 
     # Load groundtruth data
     groundtruth_data = read_csv(prefix + output_filename)
@@ -30,70 +35,32 @@ def load_to_df(input_filenames, output_filename, prefix = ''):
     groundtruth_data['Unixtime'] = groundtruth_data['dt'].astype(int)
     groundtruth_data['Unixtime'] = groundtruth_data['Unixtime'].div(10**9)
 
-
     # Fix the offset
-    # Offset is 5 hours
+    # Offset is 5 hours (GMT to Chicago time over the summer)
     offset = 3600*5
-
     groundtruth_data['Unixtime'] = groundtruth_data['Unixtime'] + offset
-
-    # Standardize timestamps to every 1 second
-    # Get start and end timestamps
-    # start_timestamp = groundtruth_data.iloc[0]['Unixtime']
-    # end_timestamp = groundtruth_data.iloc[-1]['Unixtime']
-    # # Generate time steps at the same rate as accel data
-    # timestamp_range = np.arange(start_timestamp,end_timestamp+1,1)
-    # timestamp_range = np.round(timestamp_range,1)
-    # # Add existing data to the full df
-    # standardized_output = DataFrame(timestamp_range,columns=['Unixtime'])
-    # standardized_output = merge(standardized_output,groundtruth_data, how='outer', on='Unixtime')
-    # # Fill the data with ffil
-    # standardized_output.fillna(method='ffill', inplace=True)
 
     return standardized_input, groundtruth_data
 
-def prepare_uwb_data(uwb_filenames, prefix=''):
-    # Load in the uwb data (sample rate is 15 seconds)
-    dfs = []
-    for filename in uwb_filenames:
-        df = read_csv(prefix + filename)
-        dfs.append(df)
-    original_uwb_df = concat(dfs)
 
-    # Get start and end timestamps
-    start_timestamp = original_uwb_df.iloc[0]['timestamp']
-    end_timestamp = original_uwb_df.iloc[-1]['timestamp']
-    # Generate time steps at the same rate as accel data
-    filled_timestamp = np.arange(start_timestamp,end_timestamp+0.1,0.1)
-    filled_timestamp = np.round(filled_timestamp,1)
-    # Add existing data to the full df
-    filled_uwb_df = DataFrame(filled_timestamp,columns=['timestamp'])
-    filled_uwb_df = merge(filled_uwb_df,original_uwb_df, how='outer', on='timestamp')
-    # Drop all rows except location and timestep
-    uwb_df = filled_uwb_df.loc[:, filled_uwb_df.columns.intersection(['timestamp','location_x_m','location_y_m','location_z_m'])]
-    # Fill the data with ffil
-    uwb_df.fillna(method='ffill', inplace=True)
-    
-    return uwb_df
-
-
-def create_rolling_window_data(input_df, groundtruth_df, window_size = 5, features = ['accel_x_mps2','accel_y_mps2','accel_z_mps2']):
+def create_rolling_window_data(input_df, groundtruth_df, window_size = 5, features = ['accel_x_mps2','accel_y_mps2','accel_z_mps2','coord_x_cm','coord_y_cm','coord_z_cm']):
     # Drop all columns except the features we want to train on and timestamps for data matching
     input_df = input_df.loc[:, input_df.columns.intersection(features + ['timestamp'])]
 
    # Get base time difference size
    # Use 3 and 2 in case there is a problem with the first index
-    base_time = groundtruth_df['Unixtime'][3] - groundtruth_df['Unixtime'][2]
+    groundtruth_base_time = groundtruth_df['Unixtime'][3] - groundtruth_df['Unixtime'][2]
+    input_base_time = input_df['timestamp'][3] - input_df['timestamp'][2]
 
-    # Make it five minutes
-    base_time = base_time * 5
+    # Make the base time 5 minutes to make processing much faster
+    groundtruth_base_time = groundtruth_base_time
 
-    print("Base time is: " + str(base_time))
-    window = base_time * window_size
+    print("Base time is: " + str(groundtruth_base_time))
+    window = groundtruth_base_time * window_size
     # Get grountruths in time window
     X,y = list(), list()
 
-    for start_time in np.arange(groundtruth_df.iloc[0]['Unixtime'],groundtruth_df.iloc[-1]['Unixtime'], base_time):
+    for start_time in np.arange(groundtruth_df.iloc[0]['Unixtime'],groundtruth_df.iloc[-1]['Unixtime'], groundtruth_base_time):
         end_time = start_time + window
         # Groundtruth is given in one minute time windows, so split input data every minute
         groundtruth_data_for_time_window = groundtruth_df.loc[(groundtruth_df['Unixtime'] >= start_time) & (
@@ -116,8 +83,9 @@ def create_rolling_window_data(input_df, groundtruth_df, window_size = 5, featur
 
         # Make sure we have consistent shape (Standardize to 600 readings per window)
         sensor_data_list = input_data_for_time_window.values.tolist()
-        expected_readings = 10*window
+        expected_readings = int(window/input_base_time)
         if len(sensor_data_list) != expected_readings:
+            print("Bad Window")
             continue
 
         # Add X data

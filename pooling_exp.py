@@ -208,7 +208,7 @@ def run_single_day_pooling_experiment(prefix='converted_data/', repeats=10):
     # summarize results
     summarize_results(scores)
 
-def run_pooling_on_single_tag_single_day(prefix='converted_data/', repeats=10):
+def run_pooling_on_single_tag_single_day(prefix='converted_data/', repeats=10, sensor='sensor_data'):
     # The tag numbers we want to train on
     train_tags = [1,2,3,4,5,6,7,8,9,10]
     # The tag numbers we want to test on
@@ -230,7 +230,7 @@ def run_pooling_on_single_tag_single_day(prefix='converted_data/', repeats=10):
 
         # Get all sensor data files for this folder
         filepaths = os.listdir(data_dir)
-        filepaths = [data_dir + file for file in filepaths if file.startswith('sensor_data') and file.endswith('.csv')]
+        filepaths = [data_dir + file for file in filepaths if file.startswith(sensor) and file.endswith('.csv')]
         filepaths.sort() # Make sure they're in order for processing
         
 
@@ -255,12 +255,12 @@ def run_pooling_on_single_tag_single_day(prefix='converted_data/', repeats=10):
 
         # Get all sensor data files for this folder
         filepaths = os.listdir(data_dir)
-        filepaths = [data_dir + file for file in filepaths if file.startswith('sensor_data') and file.endswith('0725.csv')]
+        filepaths = [data_dir + file for file in filepaths if file.startswith(sensor) and file.endswith('0725.csv')]
         filepaths.sort() # Make sure they're in order for processing
         
 
         # Get groundtruth path
-        groundtruth_path = data_dir + 'T' + str(tag).zfill(2) + '_groundtruths.csv'
+        groundtruth_path = groundtruth_dir + 'T' + str(tag).zfill(2) + '_groundtruths.csv'
 
         # Load in the data
         input_df, groundtruth_df = load_to_df(filepaths, groundtruth_path)
@@ -332,4 +332,5 @@ def run_pooling_on_single_tag_single_day(prefix='converted_data/', repeats=10):
 
     
 
-run_pooling_on_single_tag_single_day()
+run_pooling_on_single_tag_single_day(prefix='location_data/',repeats=3,sensor='uwb_loc')
+# run_pooling_on_single_tag_single_day()
