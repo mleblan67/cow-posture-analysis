@@ -54,6 +54,8 @@ def graph_model(trainX, trainy, testX, testy):
     plt.legend()
     plt.xlabel("Time Frame")
     plt.ylabel("Standing")
+
+    plt.title('CNN Prediction vs Groundtruth on T07 Accelerometer Data on 07/25')
     
     plt.savefig('Accuracies.png')
     # return accuracy
@@ -212,7 +214,8 @@ def run_pooling_on_single_tag_single_day(prefix='converted_data/', repeats=10, s
     # The tag numbers we want to train on
     train_tags = [1,2,3,4,5,6,7,8,9,10]
     # The tag numbers we want to test on
-    test_tags = [1,2,3,4,5,6,7,8,9,10]
+    # test_tags = [1,2,3,4,5,6,7,8,9,10]
+    test_tags = [7]
 
     # Array of all the training data we load in from each tag
     train_inputs = []
@@ -316,22 +319,22 @@ def run_pooling_on_single_tag_single_day(prefix='converted_data/', repeats=10, s
         print('Data loaded! Ready to train')
 
         # graph exp
-        # graph_model(X_train, y_train, X_test, y_test)
+        graph_model(X_train, y_train, X_test, y_test)
 
         # repeat experiment
-        scores = list()
-        for r in range(repeats):
-            score = build_model(X_train, y_train, X_test, y_test)
-            score = score * 100.0
-            print('>#%d: %.3f' % (r+1, score))
-            scores.append(score)
-        # summarize results
-        m = summarize_results(scores)
-        accuracies.append(m)
+    #     scores = list()
+    #     for r in range(repeats):
+    #         score = build_model(X_train, y_train, X_test, y_test)
+    #         score = score * 100.0
+    #         print('>#%d: %.3f' % (r+1, score))
+    #         scores.append(score)
+    #     # summarize results
+    #     m = summarize_results(scores)
+    #     accuracies.append(m)
 
-    print(f"OVERALL ACCURACY WAS {mean(accuracies)}")
+    # print(f"OVERALL ACCURACY WAS {mean(accuracies)}")
 
     
 
-run_pooling_on_single_tag_single_day(prefix='location_data/',repeats=3,sensor='uwb_loc')
-# run_pooling_on_single_tag_single_day()
+# run_pooling_on_single_tag_single_day(prefix='location_data/',repeats=3,sensor='uwb_loc')
+run_pooling_on_single_tag_single_day()
