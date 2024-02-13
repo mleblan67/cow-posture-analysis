@@ -85,7 +85,6 @@ def create_rolling_window_data(input_df, groundtruth_df, window_size = 5, featur
         sensor_data_list = input_data_for_time_window.values.tolist()
         expected_readings = int(window/input_base_time)
         if len(sensor_data_list) != expected_readings:
-            print("Bad Window")
             continue
 
         # Add X data

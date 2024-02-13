@@ -252,6 +252,7 @@ def run_pooling_on_single_tag_single_day(prefix='converted_data/', repeats=10, s
     for tag in test_tags:
         # Build folder path
         data_dir = prefix + 'T' + str(tag).zfill(2) + '/'
+        groundtruth_dir = 'converted_data/' + 'T' + str(tag).zfill(2) + '/'
 
         # Get all sensor data files for this folder
         filepaths = os.listdir(data_dir)
