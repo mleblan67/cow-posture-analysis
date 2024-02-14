@@ -12,6 +12,13 @@ from utils.features_utils import add_svm_feature
 from models import CNN, CNN_LSTM
 from tensorflow.keras.utils import to_categorical
 
+from tensorflow.compat.v1 import ConfigProto
+from tensorflow.compat.v1 import InteractiveSession
+
+config = ConfigProto()
+config.gpu_options.allow_growth = True
+session = InteractiveSession(config=config)
+
 # Train and evaluate a model
 def build_model(trainX, trainy, testX, testy):
     verbose, epochs, batch_size = 0, 10, 32
