@@ -55,7 +55,7 @@ def graph_model(trainX, trainy, testX, testy):
     plt.xlabel("Time Frame")
     plt.ylabel("Standing")
 
-    plt.title('CNN Prediction vs Groundtruth on T07 Accelerometer Data on 07/25')
+    plt.title('CNN Prediction vs Groundtruth on T07 UWB Data on 07/25')
     
     plt.savefig('Accuracies.png')
     # return accuracy
@@ -336,5 +336,5 @@ def run_pooling_on_single_tag_single_day(prefix='converted_data/', repeats=10, s
 
     
 
-# run_pooling_on_single_tag_single_day(prefix='location_data/',repeats=3,sensor='uwb_loc')
-run_pooling_on_single_tag_single_day()
+run_pooling_on_single_tag_single_day(prefix='location_data/',repeats=3,sensor='uwb_loc')
+# run_pooling_on_single_tag_single_day()
