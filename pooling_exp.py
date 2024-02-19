@@ -1,4 +1,5 @@
 import os
+import gc
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' #Disable tensorflow debug info
 
 from numpy import mean
@@ -134,6 +135,7 @@ def run_pooling_on_single_tag_single_day(repeats=3):
 
         # Save memory by deleting all DataFrames used
         del [accel_input_df, uwb_input_df, groundtruth_df, input_df]
+        gc.collect()
 
     # Load in all the testing (just one day)
     for tag in test_tags:
@@ -144,12 +146,12 @@ def run_pooling_on_single_tag_single_day(repeats=3):
 
         # Get all accelerometer sensor data files for this folder
         accel_filepaths = os.listdir(accel_data_dir)
-        accel_filepaths = [accel_data_dir + file for file in accel_filepaths if file.startswith('sensor_data') and file.endswith('.csv')]
+        accel_filepaths = [accel_data_dir + file for file in accel_filepaths if file.startswith('sensor_data') and file.endswith('0725.csv')]
         accel_filepaths.sort() # Make sure they're in order for processing
 
         # Get all UWB sensor data files for this folder
         uwb_filepaths = os.listdir(uwb_data_dir)
-        uwb_filepaths = [uwb_data_dir + file for file in uwb_filepaths if file.startswith('uwb_loc') and file.endswith('.csv')]
+        uwb_filepaths = [uwb_data_dir + file for file in uwb_filepaths if file.startswith('uwb_loc') and file.endswith('0725.csv')]
         uwb_filepaths.sort() # Make sure they're in order for processing
         
         # Get groundtruth path
@@ -173,6 +175,7 @@ def run_pooling_on_single_tag_single_day(repeats=3):
 
         # Save memory by deleting all DataFrames used
         del [accel_input_df, uwb_input_df, groundtruth_df, input_df]
+        gc.collect()
 
 
     accuracies = []
