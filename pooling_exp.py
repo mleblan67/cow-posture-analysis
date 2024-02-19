@@ -167,8 +167,8 @@ def run_pooling_on_single_tag_single_day(repeats=3):
         print(f"Created Sliding window for tag {tag} \n")
 
         # Add to array
-        train_inputs.append(X)
-        train_groundtruths.append(y)
+        test_inputs.append(X)
+        test_groundtruths.append(y)
 
 
     accuracies = []
