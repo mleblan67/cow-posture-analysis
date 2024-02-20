@@ -28,7 +28,7 @@ def load_to_df(input_filenames, output_filename, prefix = ''):
     timestamp_range = np.round(timestamp_range,1)
     # Add existing data to the full df
     standardized_input = DataFrame(timestamp_range,columns=['timestamp'])
-    standardized_input = merge(standardized_input,input_data, how='outer', on='timestamp')
+    standardized_input = merge(standardized_input,input_data, how='inner', on='timestamp')
     # Fill the data with ffil
     standardized_input.fillna(method='ffill', inplace=True)
 
