@@ -133,6 +133,10 @@ def run_pooling_on_single_tag_single_day(repeats=3):
         train_inputs.append(X)
         train_groundtruths.append(y)
 
+        # Manage memory
+        del [accel_input_df, uwb_input_df, groundtruth_df, input_df]
+        gc.collect()
+
 
     # Load in all the testing (just one day)
     for tag in test_tags:
@@ -169,6 +173,10 @@ def run_pooling_on_single_tag_single_day(repeats=3):
         # Add to array
         test_inputs.append(X)
         test_groundtruths.append(y)
+
+        # Manage memory
+        del [accel_input_df, uwb_input_df, groundtruth_df, input_df]
+        gc.collect()
 
 
     accuracies = []
