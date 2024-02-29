@@ -122,7 +122,7 @@ def run_pooling_on_single_tag_single_day(repeats=3):
         uwb_input_df, _ = load_to_df(uwb_filepaths, groundtruth_path)
 
         # Combine all sensor data together
-        input_df = merge(accel_input_df, uwb_input_df, how='inner', on='timestamp')
+        input_df = merge(accel_input_df, uwb_input_df, how='outer', on='timestamp')
 
         print(f"Loaded in tag {tag}")
         # Create sliding window
@@ -163,7 +163,7 @@ def run_pooling_on_single_tag_single_day(repeats=3):
         uwb_input_df, _ = load_to_df(uwb_filepaths, groundtruth_path)
 
         # Combine all sensor data together
-        input_df = merge(accel_input_df, uwb_input_df, how='inner', on='timestamp')
+        input_df = merge(accel_input_df, uwb_input_df, how='outer', on='timestamp')
 
         print(f"Loaded in tag {tag}")
         # Create sliding window

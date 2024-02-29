@@ -19,16 +19,13 @@ def load_to_df(input_filenames, output_filename, prefix = ''):
     start_timestamp = input_data.iloc[0]['timestamp']
     end_timestamp = input_data.iloc[-1]['timestamp']
     # Generate time steps at the same rate as the input data
-    # delta = input_data.iloc[1]['timestamp'] - input_data.iloc[0]['timestamp']
-
-    # Hard code the delta of accelerometer to up-sample UWB
-    delta = 0.1
+    delta = input_data.iloc[1]['timestamp'] - input_data.iloc[0]['timestamp']
 
     timestamp_range = np.arange(start_timestamp,end_timestamp+delta,delta)
     timestamp_range = np.round(timestamp_range,1)
     # Add existing data to the full df
     standardized_input = DataFrame(timestamp_range,columns=['timestamp'])
-    standardized_input = merge(standardized_input,input_data, how='inner', on='timestamp')
+    standardized_input = merge(standardized_input,input_data, how='outer', on='timestamp')
     # Fill the data with ffil
     standardized_input.fillna(method='ffill', inplace=True)
 
