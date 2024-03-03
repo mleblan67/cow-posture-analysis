@@ -232,6 +232,139 @@ def run_pooling_on_single_tag_single_day(repeats=3):
 
     # print(f"OVERALL ACCURACY WAS {mean(accuracies)}")
 
+
+def run_pooling_on_single_tag_single_day_behavior(repeats=3):
+    accel_data_prefix = 'converted_data/'
+    groundtruth_data_prefix = 'behavior_analysis/combined_cow_data/'
+
+    # The tag numbers we want to train on
+    train_tags = [1,2,3,4,5,6,7,8,9,10]
+    # The tag numbers we want to test on
+    test_tags = [1,2,3,4,5,6,7,8,9,10]
+    # test_tags = [7]
+
+    # Array of all the training data we load in from each tag
+    train_inputs = []
+    train_groundtruths = []
+
+    # Array of all the testing data we load in from each tag
+    test_inputs = []
+    test_groundtruths = []
+
+    # Load in all the training
+    for tag in train_tags:
+        # Build folder path
+        accel_data_dir = accel_data_prefix + 'T' + str(tag).zfill(2) + '/'
+        groundtruth_dir = groundtruth_data_prefix + 'T' + str(tag).zfill(2) + '/'
+
+        # Get all accelerometer sensor data files for this folder
+        accel_filepaths = os.listdir(accel_data_dir)
+        accel_filepaths = [accel_data_dir + file for file in accel_filepaths if file.startswith('sensor_data') and file.endswith('.csv')]
+        accel_filepaths.sort() # Make sure they're in order for processing
+        
+        # Get groundtruth path
+        groundtruth_path = groundtruth_dir + 'T' + str(tag).zfill(2) + '_groundtruth.csv'
+
+        # Load in both sensor data
+        accel_input_df, groundtruth_df = load_to_df(accel_filepaths, groundtruth_path)
+
+        print(f"Loaded in tag {tag}")
+        # Create sliding window
+        X, y = create_rolling_window_data(accel_input_df, groundtruth_df)
+        print(f"Created Sliding window for tag {tag} \n")
+
+        # Add to array
+        train_inputs.append(X)
+        train_groundtruths.append(y)
+
+        # Manage memory
+        del [accel_input_df, uwb_input_df, groundtruth_df, input_df]
+        gc.collect()
+
+
+    # Load in all the testing (just one day)
+    for tag in test_tags:
+        # Build folder path
+        accel_data_dir = accel_data_prefix + 'T' + str(tag).zfill(2) + '/'
+        groundtruth_dir = groundtruth_data_prefix + 'T' + str(tag).zfill(2) + '/'
+
+        # Get all accelerometer sensor data files for this folder
+        accel_filepaths = os.listdir(accel_data_dir)
+        accel_filepaths = [accel_data_dir + file for file in accel_filepaths if file.endswith('0725.csv')]
+        accel_filepaths.sort() # Make sure they're in order for processing
+        
+        # Get groundtruth path
+        groundtruth_path = groundtruth_dir + 'T' + str(tag).zfill(2) + '_groundtruth.csv'
+
+        # Load in both sensor data
+        accel_input_df, groundtruth_df = load_to_df(accel_filepaths, groundtruth_path)
+
+        print(f"Loaded in tag {tag}")
+        # Create sliding window
+        X, y = create_rolling_window_data(input_df, groundtruth_df)
+        print(f"Created Sliding window for tag {tag} \n")
+
+        # Add to array
+        test_inputs.append(X)
+        test_groundtruths.append(y)
+
+        # Manage memory
+        del [accel_input_df, uwb_input_df, groundtruth_df, input_df]
+        gc.collect()
+
+
+    accuracies = []
+    # Loop through every test tag to train on all other data and test on this one
+    for test_tag_i in range(len(test_tags)):
+        print(f"Testing on tag {test_tags[test_tag_i]}")
+
+        # Prepare training data
+        # Combine all training data
+        X_train = []
+        y_train = []
+
+        for i in range(len(train_tags)):
+            # Skip if this is the tag we're testing on
+            if i == test_tag_i:
+                continue
+
+            X_train += train_inputs[i]
+            y_train += train_groundtruths[i]
+        
+        # One-hot encoding
+        y_train = to_categorical(y_train)
+        X_train = asarray(X_train)
+
+        # Prepare testing data
+        X_test = test_inputs[test_tag_i]
+        y_test = test_groundtruths[test_tag_i]
+
+        y_test = to_categorical(y_test)
+        X_test = asarray(X_test)
+
+        # Train/Test split for data
+        print("Training data shape: (X) (y)")
+        print(X_train.shape, y_train.shape)
+        print("Testing data shape: (X) (y)")
+        print(X_test.shape, y_test.shape)
+
+        print('Data loaded! Ready to train')
+
+        # graph exp
+        # graph_model(X_train, y_train, X_test, y_test)
+
+        # repeat experiment
+        scores = list()
+        for r in range(repeats):
+            score = build_model(X_train, y_train, X_test, y_test)
+            score = score * 100.0
+            print('>#%d: %.3f' % (r+1, score))
+            scores.append(score)
+        # summarize results
+        m = summarize_results(scores)
+        accuracies.append(m)
+
+    print(f"OVERALL ACCURACY WAS {mean(accuracies)}")
     
 
-run_pooling_on_single_tag_single_day()
+run_pooling_on_single_tag_single_day_behavior()

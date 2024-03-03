@@ -39,10 +39,11 @@ trough_y = 1.8
 trough_z = 0.6
 
 behaviors = {
-    "mineral" : 0,
-    "feeding" : 1,
-    "drinking": 2,
-    "milking" : 3
+    "not"     : 0,
+    "mineral" : 1,
+    "feeding" : 2,
+    "drinking": 3,
+    "milking" : 4
 }
 
 tags = [1,2,3,4,5,6,7,8,9,10]
@@ -124,4 +125,4 @@ for tag in tags:
         df = df.loc[:, df.columns.intersection(["timestamp", "behavior"])]
 
         # Save df
-        df.to_csv(data_dir + formatted_tag_name + "_groundtruth.csv")
+        df.to_csv(data_dir + formatted_tag_name + "_groundtruth.csv", index=False)
