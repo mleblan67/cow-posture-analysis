@@ -332,14 +332,14 @@ def run_pooling_on_single_tag_single_day_behavior(repeats=3):
             y_train += train_groundtruths[i]
         
         # One-hot encoding
-        y_train = to_categorical(y_train)
+        y_train = to_categorical(y_train, num_classes=5)
         X_train = asarray(X_train)
 
         # Prepare testing data
         X_test = test_inputs[test_tag_i]
         y_test = test_groundtruths[test_tag_i]
 
-        y_test = to_categorical(y_test)
+        y_test = to_categorical(y_test, num_classes=5)
         X_test = asarray(X_test)
 
         # Train/Test split for data
