@@ -67,7 +67,7 @@ for tag in tags:
     input_data = pd.concat(dfs)
 
     # Add behavior columns
-    df["behavior"] = 0
+    df["Labels"] = 0
 
     # Loop through all rows to label behavior
     # TODO: Find someway to vectorize this
@@ -86,11 +86,11 @@ for tag in tags:
                 if loc_x > 950:
                     # mineral += 1
                     # df.at[i, "mineral"] = 1
-                    df.at[i, "behavior"] = behaviors["mineral"]
+                    df.at[i, "Labels"] = behaviors["mineral"]
                 else:
                     # feeding += 1
                     # df.at[i, "feeding"] = 1
-                    df.at[i, "behavior"] = behaviors["feeding"]
+                    df.at[i, "Labels"] = behaviors["feeding"]
 
 
             if relative_angle > 12:
@@ -115,14 +115,15 @@ for tag in tags:
                 if drink == True:
                     # drinking += 1
                     # df.at[i, "drinking"] = 1
-                    df.at[i, "behavior"] = behaviors["drinking"]
+                    df.at[i, "Labels"] = behaviors["drinking"]
         else:
             # milking += 1
             # df.at[i, "milking"] = 1
-            df.at[i, "behavior"] = behaviors["milking"]
+            df.at[i, "Labels"] = behaviors["milking"]
 
-        # Drop all values except labeled timestamp and behavior
-        df = df.loc[:, df.columns.intersection(["timestamp", "behavior"])]
+        # Drop all values except unixtime timestamps and behavior
+        df.rename(columns={'timestamp': 'Unixtime'}, inplace=True)
+        df = df.loc[:, df.columns.intersection(["Unixtime", "Labels"])]
 
         # Save df
         df.to_csv(data_dir + formatted_tag_name + "_groundtruth.csv", index=False)
