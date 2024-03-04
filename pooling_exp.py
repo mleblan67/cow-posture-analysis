@@ -278,7 +278,7 @@ def run_pooling_on_single_tag_single_day_behavior(repeats=3):
         train_groundtruths.append(y)
 
         # Manage memory
-        del [accel_input_df, uwb_input_df, groundtruth_df, input_df]
+        del [accel_input_df, groundtruth_df, input_df]
         gc.collect()
 
 
@@ -309,7 +309,7 @@ def run_pooling_on_single_tag_single_day_behavior(repeats=3):
         test_groundtruths.append(y)
 
         # Manage memory
-        del [accel_input_df, uwb_input_df, groundtruth_df, input_df]
+        del [accel_input_df, groundtruth_df, input_df]
         gc.collect()
 
 
