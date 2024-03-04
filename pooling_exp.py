@@ -290,7 +290,7 @@ def run_pooling_on_single_tag_single_day_behavior(repeats=3):
 
         # Get all accelerometer sensor data files for this folder
         accel_filepaths = os.listdir(accel_data_dir)
-        accel_filepaths = [accel_data_dir + file for file in accel_filepaths if file.endswith('0725.csv')]
+        accel_filepaths = [accel_data_dir + file for file in accel_filepaths if file.startswith('sensor_data') and file.endswith('0725.csv')]
         accel_filepaths.sort() # Make sure they're in order for processing
         
         # Get groundtruth path
