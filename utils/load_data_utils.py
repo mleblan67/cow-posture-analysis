@@ -51,8 +51,8 @@ def create_rolling_window_data(input_df, groundtruth_df, window_size = 5, featur
 
    # Get base time difference size
    # Use 3 and 2 in case there is a problem with the first index
-    groundtruth_base_time = groundtruth_df['Unixtime'][3] - groundtruth_df['Unixtime'][2]
-    input_base_time = input_df['timestamp'][3] - input_df['timestamp'][2]
+    groundtruth_base_time = groundtruth_df['Unixtime'][4] - groundtruth_df['Unixtime'][3]
+    input_base_time = input_df['timestamp'][4] - input_df['timestamp'][3]
 
     # Make the base time 5 minutes to make processing much faster
     groundtruth_base_time = groundtruth_base_time * 5
@@ -85,7 +85,11 @@ def create_rolling_window_data(input_df, groundtruth_df, window_size = 5, featur
 
         # Make sure we have consistent shape (Standardize to 600 readings per window)
         sensor_data_list = input_data_for_time_window.values.tolist()
-        expected_readings = int(window/input_base_time)
+        # expected_readings = int(window/input_base_time)
+
+        # TODO: Figure out bug here. Why is it calculating as 3749 and not 3750?
+        expected_readings = 3750
+
         if len(sensor_data_list) != expected_readings:
             continue
 

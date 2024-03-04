@@ -274,6 +274,7 @@ def run_pooling_on_single_tag_single_day_behavior(repeats=3):
         print(f"Created Sliding window for tag {tag} \n")
 
         # Add to array
+        print(asarray(X).shape)
         train_inputs.append(X)
         train_groundtruths.append(y)
 
