@@ -278,7 +278,7 @@ def run_pooling_on_single_tag_single_day_behavior(repeats=3):
         train_groundtruths.append(y)
 
         # Manage memory
-        del [accel_input_df, groundtruth_df, input_df]
+        del [accel_input_df, groundtruth_df]
         gc.collect()
 
 
@@ -301,7 +301,7 @@ def run_pooling_on_single_tag_single_day_behavior(repeats=3):
 
         print(f"Loaded in tag {tag}")
         # Create sliding window
-        X, y = create_rolling_window_data(input_df, groundtruth_df)
+        X, y = create_rolling_window_data(accel_input_df, groundtruth_df)
         print(f"Created Sliding window for tag {tag} \n")
 
         # Add to array
@@ -309,7 +309,7 @@ def run_pooling_on_single_tag_single_day_behavior(repeats=3):
         test_groundtruths.append(y)
 
         # Manage memory
-        del [accel_input_df, groundtruth_df, input_df]
+        del [accel_input_df, groundtruth_df]
         gc.collect()
 
 
