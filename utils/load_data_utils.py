@@ -45,9 +45,12 @@ def load_to_df(input_filenames, output_filename, prefix = ''):
     return standardized_input, groundtruth_data
 
 
-def create_rolling_window_data(input_df, groundtruth_df, window_size = 5, features = ['accel_x_mps2','accel_y_mps2','accel_z_mps2','coord_x_cm','coord_y_cm','coord_z_cm']):
-    # Drop all columns except the features we want to train on and timestamps for data matching
-    input_df = input_df.loc[:, input_df.columns.intersection(features + ['timestamp'])]
+'''
+window size is given in minutes
+stride is given in minutes
+
+'''
+def create_rolling_window_data(input_df, groundtruth_df, window_size = 5, stride = 5):
 
    # Get base time difference size
    # Use 3 and 2 in case there is a problem with the first index
@@ -55,7 +58,7 @@ def create_rolling_window_data(input_df, groundtruth_df, window_size = 5, featur
     input_base_time = input_df['timestamp'][4] - input_df['timestamp'][3]
 
     # Make the base time 5 minutes to make processing much faster
-    groundtruth_base_time = groundtruth_base_time * 5
+    groundtruth_base_time = groundtruth_base_time * stride
 
     print("Base time is: " + str(groundtruth_base_time))
     window = groundtruth_base_time * window_size
@@ -85,10 +88,7 @@ def create_rolling_window_data(input_df, groundtruth_df, window_size = 5, featur
 
         # Make sure we have consistent shape (Standardize to 600 readings per window)
         sensor_data_list = input_data_for_time_window.values.tolist()
-        # expected_readings = int(window/input_base_time)
-
-        # TODO: Figure out bug here. Why is it calculating as 3749 and not 3750?
-        expected_readings = 3750
+        expected_readings = int(window/input_base_time)
 
         if len(sensor_data_list) != expected_readings:
             continue
