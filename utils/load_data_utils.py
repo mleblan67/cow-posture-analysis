@@ -33,9 +33,9 @@ def load_to_df(input_filenames, output_filename, prefix = ''):
     groundtruth_data = read_csv(prefix + output_filename)
 
     # Convert timestamps to unixtime
-    # groundtruth_data['dt'] = to_datetime(groundtruth_data['Timestamps'], format='%Y-%m-%d %H:%M:%S')
-    # groundtruth_data['Unixtime'] = groundtruth_data['dt'].astype(int)
-    # groundtruth_data['Unixtime'] = groundtruth_data['Unixtime'].div(10**9)
+    groundtruth_data['dt'] = to_datetime(groundtruth_data['Timestamps'], format='%Y-%m-%d %H:%M:%S')
+    groundtruth_data['Unixtime'] = groundtruth_data['dt'].astype(int)
+    groundtruth_data['Unixtime'] = groundtruth_data['Unixtime'].div(10**9)
 
     # Fix the offset
     # Offset is 5 hours (GMT to Chicago time over the summer)
