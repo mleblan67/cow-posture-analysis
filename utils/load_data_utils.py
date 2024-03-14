@@ -1,5 +1,6 @@
 from pandas import read_csv, concat, merge, DataFrame, to_datetime
 import numpy as np
+from math import ceil
 
 def load_to_df(input_filenames, output_filename, prefix = ''):
     # Load in the sensor data
@@ -11,7 +12,7 @@ def load_to_df(input_filenames, output_filename, prefix = ''):
 
     '''
     STANDARDIZE INPUT DATA
-    * Sometimes some timestamps are missing so we want to fill in missing 
+    Sometimes some timestamps are missing so we want to fill in missing 
     timestamps to make sure maintain a standard number of samples per minute
     '''
     
@@ -55,25 +56,24 @@ def create_rolling_window_data(input_df, groundtruth_df, window_size = 5, stride
    # Get base time difference size
    # Use 3 and 2 in case there is a problem with the first index
     groundtruth_base_time = groundtruth_df['Unixtime'][4] - groundtruth_df['Unixtime'][3]
+    print("Base time is: " + str(groundtruth_base_time))
     input_base_time = input_df['timestamp'][4] - input_df['timestamp'][3]
 
     # Make the base time 5 minutes to make processing much faster
-    groundtruth_base_time = groundtruth_base_time * stride
-
-    print("Base time is: " + str(groundtruth_base_time))
+    stride_time = groundtruth_base_time * stride
     window = groundtruth_base_time * window_size
     # Get grountruths in time window
-    X,y = list(), list()
+    X,y = np.array([]), np.array([])
 
-    for start_time in np.arange(groundtruth_df.iloc[0]['Unixtime'],groundtruth_df.iloc[-1]['Unixtime'], groundtruth_base_time):
+    for start_time in np.arange(groundtruth_df.iloc[0]['Unixtime'],groundtruth_df.iloc[-1]['Unixtime'], stride_time):
         end_time = start_time + window
         # Groundtruth is given in one minute time windows, so split input data every minute
         groundtruth_data_for_time_window = groundtruth_df.loc[(groundtruth_df['Unixtime'] >= start_time) & (
             groundtruth_df['Unixtime'] < end_time)]
-        labels = groundtruth_data_for_time_window['Labels'].tolist()
-
+        
         # Check to make sure this isn't a transition period
-        if len(set(labels)) != 1:
+        a = groundtruth_data_for_time_window["Labels"].to_numpy() # df.values
+        if not (a[0] == a).all():
             continue
 
         # Get associated sensor data
@@ -87,16 +87,24 @@ def create_rolling_window_data(input_df, groundtruth_df, window_size = 5, stride
             continue
 
         # Make sure we have consistent shape (Standardize to 600 readings per window)
-        sensor_data_list = input_data_for_time_window.values.tolist()
-        expected_readings = int(window/input_base_time)
+        sensor_data_list = input_data_for_time_window.to_numpy()
+        expected_readings = int(ceil(window/input_base_time))
 
         if len(sensor_data_list) != expected_readings:
             continue
-
+        
         # Add X data
-        X.append(sensor_data_list)
+        # X.append(sensor_data_list)
+        if X.shape[0] == 0:
+            X =  np.asarray([np.copy(sensor_data_list)])
+        else:
+            X = np.vstack([X,[sensor_data_list]])
         # Add y data
-        y.append(labels[0])
+        # y.append(a[0])
+        if y.shape[0] == 0:
+            y = np.array([a[0]])
+        else:
+            y = np.concatenate((y,[a[0]]))
         
 
     return X,y

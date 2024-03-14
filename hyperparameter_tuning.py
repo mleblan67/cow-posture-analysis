@@ -4,7 +4,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' #Disable tensorflow debug info
 
 from numpy import mean
 from numpy import std
-from numpy import asarray
+import numpy as np
 from sklearn.model_selection import train_test_split
 from matplotlib import pyplot as plt
 from pandas import merge
@@ -91,9 +91,10 @@ def tune_hyperparameters(repeats=2):
 
     for window_size in window_sizes:
         for stride in strides:
-
+            print(f"WINDOW SIZE: {window_size}")
+            print(f"STRIDE: {stride} \n")
             # The tag numbers we want to train on
-            train_tags = [1,2,3,4,5,6,7,8,9,10]
+            train_tags = [1,2,3,5,6,8,9,10]
             # The tag numbers we want to test on
             # test_tags = [1,2,3,4,5,6,7,8,9,10]
             test_tags = [7]
@@ -101,14 +102,14 @@ def tune_hyperparameters(repeats=2):
             validation_tags = [4]
 
             # Array of all the training data we load in from each tag
-            train_inputs = []
-            train_groundtruths = []
+            train_inputs = np.array([])
+            train_groundtruths = np.array([])
             # Array of all the testing data we load in from each tag
-            test_inputs = []
-            test_groundtruths = []
+            test_inputs = np.array([])
+            test_groundtruths = np.array([])
             # Array of all the testing data we load in from each tag
-            validation_inputs = []
-            validation_groundtruths = []
+            validation_inputs = np.array([])
+            validation_groundtruths = np.array([])
 
             # Load in all the training
             for tag in train_tags:
@@ -119,7 +120,7 @@ def tune_hyperparameters(repeats=2):
 
                 # Get all accelerometer sensor data files for this folder
                 accel_filepaths = os.listdir(accel_data_dir)
-                accel_filepaths = [accel_data_dir + file for file in accel_filepaths if file.startswith('sensor_data') and file.endswith('.csv')]
+                accel_filepaths = [accel_data_dir + file for file in accel_filepaths if file.startswith('sensor_data') and file.endswith('0725.csv')]
                 accel_filepaths.sort() # Make sure they're in order for processing
                 
                 # Get groundtruth path
@@ -131,11 +132,20 @@ def tune_hyperparameters(repeats=2):
                 print(f"Loaded in tag {tag}")
                 # Create sliding window
                 X, y = create_rolling_window_data(accel_input_df, groundtruth_df, window_size=window_size, stride=stride)
-                print(f"Created Sliding window for tag {tag} \n")
+                print(f"Created Sliding window for tag {tag}")
 
                 # Add to array
-                train_inputs.append(X)
-                train_groundtruths.append(y)
+                # train_inputs.append(X)
+                # train_groundtruths.append(y)
+                if train_inputs.shape[0] == 0:
+                    train_inputs = np.asarray([np.copy(X)])
+                else:
+                    train_inputs = np.vstack([train_inputs, [X]])
+
+                if train_groundtruths.shape[0] == 0:
+                    train_groundtruths = np.asarray([np.copy(y)])
+                else:
+                    train_groundtruths = np.vstack([train_groundtruths, y])
 
                 # Manage memory
                 del [accel_input_df, groundtruth_df]
@@ -144,6 +154,7 @@ def tune_hyperparameters(repeats=2):
 
             # Load in all the testing (just one day)
             for tag in test_tags:
+                break
                 # Build folder path
                 accel_data_dir = accel_data_prefix + 'T' + str(tag).zfill(2) + '/'
                 groundtruth_dir = 'converted_data/' + 'T' + str(tag).zfill(2) + '/'
@@ -162,11 +173,20 @@ def tune_hyperparameters(repeats=2):
                 print(f"Loaded in tag {tag}")
                 # Create sliding window
                 X, y = create_rolling_window_data(accel_input_df, groundtruth_df, window_size=window_size, stride=stride)
-                print(f"Created Sliding window for tag {tag} \n")
+                print(f"Created Sliding window for tag {tag}")
 
                 # Add to array
-                test_inputs.append(X)
-                test_groundtruths.append(y)
+                # test_inputs.append(X)
+                # test_groundtruths.append(y)
+                if test_inputs.shape[0] == 0:
+                    test_inputs = np.asarray([np.copy(X)])
+                else:
+                    test_inputs = np.vstack([test_inputs, [X]])
+
+                if test_groundtruths.shape[0] == 0:
+                    test_groundtruths = np.asarray([np.copy(y)])
+                else:
+                    test_groundtruths = np.vstack([test_groundtruths, y])
 
                 # Manage memory
                 del [accel_input_df, groundtruth_df]
@@ -193,11 +213,20 @@ def tune_hyperparameters(repeats=2):
                 print(f"Loaded in tag {tag}")
                 # Create sliding window
                 X, y = create_rolling_window_data(accel_input_df, groundtruth_df, window_size=window_size, stride=stride)
-                print(f"Created Sliding window for tag {tag} \n")
+                print(f"Created Sliding window for tag {tag}")
 
                 # Add to array
-                validation_inputs.append(X)
-                validation_groundtruths.append(y)
+                # validation_inputs.append(X)
+                # validation_groundtruths.append(y)
+                if validation_inputs.shape[0] == 0:
+                    validation_inputs = np.asarray([np.copy(X)])
+                else:
+                    validation_inputs = np.vstack([validation_inputs, [X]])
+
+                if validation_groundtruths.shape[0] == 0:
+                    validation_groundtruths = np.asarray([np.copy(y)])
+                else:
+                    validation_groundtruths = np.vstack([validation_groundtruths, y])
 
                 # Manage memory
                 del [accel_input_df, groundtruth_df]
@@ -207,32 +236,38 @@ def tune_hyperparameters(repeats=2):
             # Loop through every test tag to train on all other data and test on this one
             for val_tag_i in range(len(validation_tags)):
                 print(f"Validating on tag {validation_tags[val_tag_i]}")
-                print(f"WINDOW SIZE: {window_size}")
-                print(f"STRIDE: {stride}")
 
                 # Prepare training data
                 # Combine all training data
-                X_train = []
-                y_train = []
+                X_train = np.array([])
+                y_train = np.array([])
 
                 for i in range(len(train_tags)):
                     # Skip if this is the tag we're testing on
-                    if i == val_tag_i:
+                    if train_tags[i] == validation_tags[val_tag_i]:
                         continue
 
-                    X_train += train_inputs[i]
-                    y_train += train_groundtruths[i]
+                    # X_train += train_inputs[i]
+                    # y_train += train_groundtruths[i]
+                    if X_train.shape[0] == 0:
+                        X_train = np.copy(train_inputs[i])
+                    else:
+                        X_train = np.vstack([X_train, [train_inputs[i]]])
+                    
+                    if y_train.shape[0] == 0:
+                        y_train = np.copy(train_groundtruths[i])
+                    else:
+                        y_train = np.concatenate(y_train, train_groundtruths[i])
                 
+
                 # One-hot encoding
                 y_train = to_categorical(y_train)
-                X_train = asarray(X_train)
 
                 # Prepare validation data
                 X_val = validation_inputs[val_tag_i]
                 y_val = validation_groundtruths[val_tag_i]
 
                 y_val = to_categorical(y_val)
-                X_val = asarray(X_val)
 
                 # Train/Test split for data
                 print("Training data shape: (X) (y)")
@@ -254,5 +289,7 @@ def tune_hyperparameters(repeats=2):
                     scores.append(score)
                 # summarize results
                 m = summarize_results(scores)
+                print(m)
+                print("\n")
 
 tune_hyperparameters()

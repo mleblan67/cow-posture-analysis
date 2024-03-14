@@ -8,6 +8,8 @@ from numpy import asarray
 from sklearn.model_selection import train_test_split
 from matplotlib import pyplot as plt
 from pandas import merge
+import pandas as pd
+import datetime
 
 from utils.load_data_utils import load_to_df, create_rolling_window_data
 from utils.features_utils import add_svm_feature
@@ -63,11 +65,18 @@ def graph_model(trainX, trainy, testX, testy):
     plt.plot(predictions, label = "Prediction", color='red', linestyle='dashed')
 
     plt.legend()
-    plt.xlabel("Time Frame")
+    plt.xlabel("Time")
     plt.ylabel("Standing")
+    plt.yticks([0,1], ["Sitting", "Standing"])
 
-    plt.title('CNN Prediction vs Groundtruth on T07 UWB Data on 07/25')
-    
+    base = pd.to_datetime(1690261200.0, unit='s')
+    timestamp_list = [base + datetime.timedelta(minutes=x*5) for x in range(0,200,20)]
+    times = [f'{x.hour}:{str(x.minute).zfill(2)}' for x in timestamp_list]
+
+    plt.xticks(range(0,200,20), times)
+
+    plt.title('T07 07/25 Accelerometer')
+
     plt.savefig('Accuracies.png')
     # return accuracy
 
