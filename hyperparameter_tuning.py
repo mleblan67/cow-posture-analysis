@@ -102,14 +102,14 @@ def tune_hyperparameters(repeats=2):
             validation_tags = [4]
 
             # Array of all the training data we load in from each tag
-            train_inputs = np.array([])
-            train_groundtruths = np.array([])
+            train_inputs = []
+            train_groundtruths = []
             # Array of all the testing data we load in from each tag
-            test_inputs = np.array([])
-            test_groundtruths = np.array([])
+            test_inputs = []
+            test_groundtruths = []
             # Array of all the testing data we load in from each tag
-            validation_inputs = np.array([])
-            validation_groundtruths = np.array([])
+            validation_inputs = []
+            validation_groundtruths = []
 
             # Load in all the training
             for tag in train_tags:
@@ -135,17 +135,8 @@ def tune_hyperparameters(repeats=2):
                 print(f"Created Sliding window for tag {tag}")
 
                 # Add to array
-                # train_inputs.append(X)
-                # train_groundtruths.append(y)
-                if train_inputs.shape[0] == 0:
-                    train_inputs = np.asarray([np.copy(X)])
-                else:
-                    train_inputs = np.vstack([train_inputs, [X]])
-
-                if train_groundtruths.shape[0] == 0:
-                    train_groundtruths = np.asarray([np.copy(y)])
-                else:
-                    train_groundtruths = np.vstack([train_groundtruths, y])
+                train_inputs.append(X)
+                train_groundtruths.append(y)
 
                 # Manage memory
                 del [accel_input_df, groundtruth_df]
@@ -176,17 +167,8 @@ def tune_hyperparameters(repeats=2):
                 print(f"Created Sliding window for tag {tag}")
 
                 # Add to array
-                # test_inputs.append(X)
-                # test_groundtruths.append(y)
-                if test_inputs.shape[0] == 0:
-                    test_inputs = np.asarray([np.copy(X)])
-                else:
-                    test_inputs = np.vstack([test_inputs, [X]])
-
-                if test_groundtruths.shape[0] == 0:
-                    test_groundtruths = np.asarray([np.copy(y)])
-                else:
-                    test_groundtruths = np.vstack([test_groundtruths, y])
+                test_inputs.append(X)
+                test_groundtruths.append(y)
 
                 # Manage memory
                 del [accel_input_df, groundtruth_df]
@@ -216,17 +198,8 @@ def tune_hyperparameters(repeats=2):
                 print(f"Created Sliding window for tag {tag}")
 
                 # Add to array
-                # validation_inputs.append(X)
-                # validation_groundtruths.append(y)
-                if validation_inputs.shape[0] == 0:
-                    validation_inputs = np.asarray([np.copy(X)])
-                else:
-                    validation_inputs = np.vstack([validation_inputs, [X]])
-
-                if validation_groundtruths.shape[0] == 0:
-                    validation_groundtruths = np.asarray([np.copy(y)])
-                else:
-                    validation_groundtruths = np.vstack([validation_groundtruths, y])
+                validation_inputs.append(X)
+                validation_groundtruths.append(y)
 
                 # Manage memory
                 del [accel_input_df, groundtruth_df]
@@ -252,12 +225,12 @@ def tune_hyperparameters(repeats=2):
                     if X_train.shape[0] == 0:
                         X_train = np.copy(train_inputs[i])
                     else:
-                        X_train = np.vstack([X_train, [train_inputs[i]]])
+                        X_train = np.vstack([X_train, train_inputs[i]])
                     
                     if y_train.shape[0] == 0:
                         y_train = np.copy(train_groundtruths[i])
                     else:
-                        y_train = np.concatenate(y_train, train_groundtruths[i])
+                        y_train = np.concatenate((y_train, train_groundtruths[i]))
                 
 
                 # One-hot encoding

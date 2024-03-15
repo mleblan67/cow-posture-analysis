@@ -10,6 +10,7 @@ from matplotlib import pyplot as plt
 from pandas import merge
 import pandas as pd
 import datetime
+import numpy as np
 
 from utils.load_data_utils import load_to_df, create_rolling_window_data
 from utils.features_utils import add_svm_feature
@@ -75,9 +76,9 @@ def graph_model(trainX, trainy, testX, testy):
 
     plt.xticks(range(0,200,20), times)
 
-    plt.title('T07 07/25 Accelerometer')
+    plt.title('T07 07/25 UWB')
 
-    plt.savefig('Accuracies.png')
+    plt.savefig('UWB_Accuracies.png')
     # return accuracy
 
 # summarize scores
@@ -93,18 +94,19 @@ def run_pooling_on_single_tag_single_day(repeats=3):
     uwb_data_prefix = 'location_data/'
 
     # The tag numbers we want to train on
-    train_tags = [1,2,3,4,5,6,7,8,9,10]
+    # train_tags = [1,2,3,4,5,6,7,8,9,10]
+    train_tags = [1,2,3]
     # The tag numbers we want to test on
-    test_tags = [1,2,3,4,5,6,7,8,9,10]
-    # test_tags = [7]
+    # test_tags = [1,2,3,4,5,6,7,8,9,10]
+    test_tags = [7]
 
     # Array of all the training data we load in from each tag
     train_inputs = []
     train_groundtruths = []
-
     # Array of all the testing data we load in from each tag
     test_inputs = []
     test_groundtruths = []
+
 
     # Load in all the training
     for tag in train_tags:
@@ -127,15 +129,15 @@ def run_pooling_on_single_tag_single_day(repeats=3):
         groundtruth_path = groundtruth_dir + 'T' + str(tag).zfill(2) + '_groundtruths.csv'
 
         # Load in both sensor data
-        accel_input_df, groundtruth_df = load_to_df(accel_filepaths, groundtruth_path)
-        uwb_input_df, _ = load_to_df(uwb_filepaths, groundtruth_path)
+        accel_input_df, _ = load_to_df(accel_filepaths, groundtruth_path)
+        uwb_input_df, groundtruth_df = load_to_df(uwb_filepaths, groundtruth_path)
 
         # Combine all sensor data together
         input_df = merge(accel_input_df, uwb_input_df, how='outer', on='timestamp')
 
         print(f"Loaded in tag {tag}")
         # Create sliding window
-        X, y = create_rolling_window_data(input_df, groundtruth_df)
+        X, y = create_rolling_window_data(uwb_input_df, groundtruth_df)
         print(f"Created Sliding window for tag {tag} \n")
 
         # Add to array
@@ -168,15 +170,15 @@ def run_pooling_on_single_tag_single_day(repeats=3):
         groundtruth_path = groundtruth_dir + 'T' + str(tag).zfill(2) + '_groundtruths.csv'
 
         # Load in both sensor data
-        accel_input_df, groundtruth_df = load_to_df(accel_filepaths, groundtruth_path)
-        uwb_input_df, _ = load_to_df(uwb_filepaths, groundtruth_path)
+        accel_input_df, _ = load_to_df(accel_filepaths, groundtruth_path)
+        uwb_input_df, groundtruth_df = load_to_df(uwb_filepaths, groundtruth_path)
 
         # Combine all sensor data together
         input_df = merge(accel_input_df, uwb_input_df, how='outer', on='timestamp')
 
         print(f"Loaded in tag {tag}")
         # Create sliding window
-        X, y = create_rolling_window_data(input_df, groundtruth_df)
+        X, y = create_rolling_window_data(uwb_input_df, groundtruth_df)
         print(f"Created Sliding window for tag {tag} \n")
 
         # Add to array
@@ -195,27 +197,35 @@ def run_pooling_on_single_tag_single_day(repeats=3):
 
         # Prepare training data
         # Combine all training data
-        X_train = []
-        y_train = []
+        X_train = np.array([])
+        y_train = np.array([])
 
         for i in range(len(train_tags)):
             # Skip if this is the tag we're testing on
-            if i == test_tag_i:
+            if train_tags[i] == test_tags[test_tag_i]:
                 continue
 
-            X_train += train_inputs[i]
-            y_train += train_groundtruths[i]
-        
+            # X_train += train_inputs[i]
+            # y_train += train_groundtruths[i]
+            if X_train.shape[0] == 0:
+                X_train = np.copy(train_inputs[i])
+            else:
+                X_train = np.vstack([X_train, train_inputs[i]])
+            
+            if y_train.shape[0] == 0:
+                y_train = np.copy(train_groundtruths[i])
+            else:
+                y_train = np.concatenate((y_train, train_groundtruths[i]))
+                
+
         # One-hot encoding
         y_train = to_categorical(y_train)
-        X_train = asarray(X_train)
 
         # Prepare testing data
         X_test = test_inputs[test_tag_i]
         y_test = test_groundtruths[test_tag_i]
 
         y_test = to_categorical(y_test)
-        X_test = asarray(X_test)
 
         # Train/Test split for data
         print("Training data shape: (X) (y)")
@@ -226,7 +236,7 @@ def run_pooling_on_single_tag_single_day(repeats=3):
         print('Data loaded! Ready to train')
 
         # graph exp
-        # graph_model(X_train, y_train, X_test, y_test)
+        graph_model(X_train, y_train, X_test, y_test)
 
         # repeat experiment
         scores = list()
@@ -377,4 +387,4 @@ def run_pooling_on_single_tag_single_day_behavior(repeats=3):
     print(f"OVERALL ACCURACY WAS {mean(accuracies)}")
     
 
-run_pooling_on_single_tag_single_day_behavior()
+run_pooling_on_single_tag_single_day()
