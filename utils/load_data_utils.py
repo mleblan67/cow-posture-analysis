@@ -72,7 +72,7 @@ def create_rolling_window_data(input_df, groundtruth_df, window_size = 5, stride
             groundtruth_df['Unixtime'] < end_time)]
         
         # Check to make sure this isn't a transition period
-        a = groundtruth_data_for_time_window["Labels"] # df.values
+        a = groundtruth_data_for_time_window["Labels"].to_list() # df.values
         if not (len(set(a)) == 1):
             continue
 
