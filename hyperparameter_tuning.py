@@ -86,7 +86,7 @@ Hyperparameters: sliding window size, sliding window strides
 def tune_hyperparameters(repeats=2):
     accel_data_prefix = 'converted_data/'
 
-    window_sizes = [20, 25, 30]
+    window_sizes = [25, 30]
     strides = [5,10]
 
     for window_size in window_sizes:
@@ -124,7 +124,7 @@ def tune_hyperparameters(repeats=2):
                 accel_filepaths.sort() # Make sure they're in order for processing
 
                 # Only train on half the days
-                accel_filepaths = accel_filepaths = accel_filepaths[:(int(len(accel_filepaths)/2)+1)]
+                # accel_filepaths = accel_filepaths = accel_filepaths[:(int(len(accel_filepaths)/2)+1)]
                 
                 # Get groundtruth path
                 groundtruth_path = groundtruth_dir + 'T' + str(tag).zfill(2) + '_groundtruths.csv'
