@@ -1,5 +1,6 @@
 from pandas import read_csv, concat, merge, DataFrame, to_datetime
 import numpy as np
+from math import ceil
 
 def load_to_df(input_filenames, output_filename, prefix = ''):
     # Load in the sensor data
@@ -88,7 +89,7 @@ def create_rolling_window_data(input_df, groundtruth_df, window_size = 5, stride
 
         # Make sure we have consistent shape (Standardize to 600 readings per window)
         sensor_data_list = input_data_for_time_window.values.tolist()
-        expected_readings = int(window/input_base_time)
+        expected_readings = ceil(window/input_base_time)
 
         if len(sensor_data_list) != expected_readings:
             continue
