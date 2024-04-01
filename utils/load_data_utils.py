@@ -59,14 +59,14 @@ def create_rolling_window_data(input_df, groundtruth_df, window_size = 5, stride
     input_base_time = input_df['timestamp'][4] - input_df['timestamp'][3]
 
     # Make the base time 5 minutes to make processing much faster
-    groundtruth_base_time = groundtruth_base_time * stride
-
     print("Base time is: " + str(groundtruth_base_time))
+    
+    stride_time = groundtruth_base_time * stride
     window = groundtruth_base_time * window_size
     # Get grountruths in time window
     X,y = list(), list()
 
-    for start_time in np.arange(groundtruth_df.iloc[0]['Unixtime'],groundtruth_df.iloc[-1]['Unixtime'], groundtruth_base_time):
+    for start_time in np.arange(groundtruth_df.iloc[0]['Unixtime'],groundtruth_df.iloc[-1]['Unixtime'], stride_time):
         end_time = start_time + window
         # Groundtruth is given in one minute time windows, so split input data every minute
         groundtruth_data_for_time_window = groundtruth_df.loc[(groundtruth_df['Unixtime'] >= start_time) & (
