@@ -86,8 +86,8 @@ Hyperparameters: sliding window size, sliding window strides
 def tune_hyperparameters(repeats=2):
     accel_data_prefix = 'converted_data/'
 
-    window_sizes = [3,5,10]
-    strides = [1,3,5]
+    window_sizes = [20, 25, 30]
+    strides = [5,10]
 
     for window_size in window_sizes:
         for stride in strides:
@@ -138,8 +138,8 @@ def tune_hyperparameters(repeats=2):
                 print(f"Created Sliding window for tag {tag}")
 
                 # Add to array
-                train_inputs.append(X)
-                train_groundtruths.append(y)
+                train_inputs.append(X.to_numpy())
+                train_groundtruths.append(y.to_numpy)
 
                 # Manage memory
                 del [accel_input_df, groundtruth_df]
@@ -170,8 +170,8 @@ def tune_hyperparameters(repeats=2):
                 print(f"Created Sliding window for tag {tag}")
 
                 # Add to array
-                test_inputs.append(X)
-                test_groundtruths.append(y)
+                test_inputs.append(X.to_numpy())
+                test_groundtruths.append(y.to_numpy())
 
                 # Manage memory
                 del [accel_input_df, groundtruth_df]
@@ -201,8 +201,8 @@ def tune_hyperparameters(repeats=2):
                 print(f"Created Sliding window for tag {tag}")
 
                 # Add to array
-                validation_inputs.append(X)
-                validation_groundtruths.append(y)
+                validation_inputs.append(X.to_numpy())
+                validation_groundtruths.append(y.to_numpy())
 
                 # Manage memory
                 del [accel_input_df, groundtruth_df]

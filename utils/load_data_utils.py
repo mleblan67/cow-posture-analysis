@@ -63,7 +63,7 @@ def create_rolling_window_data(input_df, groundtruth_df, window_size = 5, stride
     stride_time = groundtruth_base_time * stride
     window = groundtruth_base_time * window_size
     # Get grountruths in time window
-    X,y = np.array([]), np.array([])
+    X,y = [], []
 
     for start_time in np.arange(groundtruth_df.iloc[0]['Unixtime'],groundtruth_df.iloc[-1]['Unixtime'], stride_time):
         end_time = start_time + window
@@ -72,8 +72,8 @@ def create_rolling_window_data(input_df, groundtruth_df, window_size = 5, stride
             groundtruth_df['Unixtime'] < end_time)]
         
         # Check to make sure this isn't a transition period
-        a = groundtruth_data_for_time_window["Labels"].to_numpy() # df.values
-        if not (a[0] == a).all():
+        a = groundtruth_data_for_time_window["Labels"] # df.values
+        if not (len(set(a)) == 1):
             continue
 
         # Get associated sensor data
@@ -87,24 +87,17 @@ def create_rolling_window_data(input_df, groundtruth_df, window_size = 5, stride
             continue
 
         # Make sure we have consistent shape (Standardize to 600 readings per window)
-        sensor_data_list = input_data_for_time_window.to_numpy()
+        sensor_data_list = input_data_for_time_window
         expected_readings = int(ceil(window/input_base_time))
 
         if len(sensor_data_list) != expected_readings:
             continue
         
         # Add X data
-        # X.append(sensor_data_list)
-        if X.shape[0] == 0:
-            X =  np.asarray([np.copy(sensor_data_list)])
-        else:
-            X = np.vstack([X,[sensor_data_list]])
+        X.append(sensor_data_list)
+
         # Add y data
-        # y.append(a[0])
-        if y.shape[0] == 0:
-            y = np.array([a[0]])
-        else:
-            y = np.concatenate((y,[a[0]]))
+        y.append(a[0])
         
 
     return X,y
