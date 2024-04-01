@@ -8,6 +8,7 @@ def load_to_df(input_filenames, output_filename, prefix = ''):
     for filename in input_filenames:
         df = read_csv(prefix + filename)
         dfs.append(df)
+        
     input_data = concat(dfs)
 
     '''
@@ -15,7 +16,6 @@ def load_to_df(input_filenames, output_filename, prefix = ''):
     Sometimes some timestamps are missing so we want to fill in missing 
     timestamps to make sure maintain a standard number of samples per minute
     '''
-    
     # Get start and end timestamps
     start_timestamp = input_data.iloc[0]['timestamp']
     end_timestamp = input_data.iloc[-1]['timestamp']
@@ -53,8 +53,8 @@ stride is given in minutes
 '''
 def create_rolling_window_data(input_df, groundtruth_df, window_size = 5, stride = 5):
 
-   # Get base time difference size
-   # Use 3 and 2 in case there is a problem with the first index
+    # Get base time difference size
+    # Use 3 and 2 in case there is a problem with the first index
     groundtruth_base_time = groundtruth_df['Unixtime'][4] - groundtruth_df['Unixtime'][3]
     print("Base time is: " + str(groundtruth_base_time))
     input_base_time = input_df['timestamp'][4] - input_df['timestamp'][3]

@@ -120,8 +120,11 @@ def tune_hyperparameters(repeats=2):
 
                 # Get all accelerometer sensor data files for this folder
                 accel_filepaths = os.listdir(accel_data_dir)
-                accel_filepaths = [accel_data_dir + file for file in accel_filepaths if file.startswith('sensor_data') and file.endswith('0725.csv')]
+                accel_filepaths = [accel_data_dir + file for file in accel_filepaths if file.startswith('sensor_data') and file.endswith('.csv')]
                 accel_filepaths.sort() # Make sure they're in order for processing
+
+                # Only train on half the days
+                accel_filepaths = accel_filepaths = accel_filepaths[:(int(len(accel_filepaths)/2)+1)]
                 
                 # Get groundtruth path
                 groundtruth_path = groundtruth_dir + 'T' + str(tag).zfill(2) + '_groundtruths.csv'
