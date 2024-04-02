@@ -84,9 +84,9 @@ def run_pooling_on_single_tag_single_day(repeats=3):
     uwb_data_prefix = 'location_data/'
 
     # The tag numbers we want to train on
-    train_tags = [1,2,3,4,5,6,7,8,9,10]
+    train_tags = [1,2,3,4]
     # The tag numbers we want to test on
-    test_tags = [1,2,3,4,5,6,7,8,9,10]
+    test_tags = [7]
     # test_tags = [7]
 
     # Array of all the training data we load in from each tag
@@ -126,7 +126,7 @@ def run_pooling_on_single_tag_single_day(repeats=3):
 
         print(f"Loaded in tag {tag}")
         # Create sliding window
-        X, y = create_rolling_window_data(input_df, groundtruth_df)
+        X, y = create_rolling_window_data(accel_input_df, groundtruth_df)
         print(f"Created Sliding window for tag {tag} \n")
 
         # Add to array
@@ -167,7 +167,7 @@ def run_pooling_on_single_tag_single_day(repeats=3):
 
         print(f"Loaded in tag {tag}")
         # Create sliding window
-        X, y = create_rolling_window_data(input_df, groundtruth_df)
+        X, y = create_rolling_window_data(accel_input_df, groundtruth_df)
         print(f"Created Sliding window for tag {tag} \n")
 
         # Add to array
