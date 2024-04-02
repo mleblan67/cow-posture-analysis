@@ -137,7 +137,7 @@ def run_pooling_on_single_tag_single_day(repeats=3):
 
         print(f"Loaded in tag {tag}")
         # Create sliding window
-        X, y = create_rolling_window_data(uwb_input_df, groundtruth_df)
+        X, y = create_rolling_window_data(accel_input_df, groundtruth_df)
         print(f"Created Sliding window for tag {tag} \n")
 
         # Add to array
@@ -178,7 +178,7 @@ def run_pooling_on_single_tag_single_day(repeats=3):
 
         print(f"Loaded in tag {tag}")
         # Create sliding window
-        X, y = create_rolling_window_data(uwb_input_df, groundtruth_df)
+        X, y = create_rolling_window_data(accel_input_df, groundtruth_df)
         print(f"Created Sliding window for tag {tag} \n")
 
         # Add to array

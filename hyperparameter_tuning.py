@@ -94,12 +94,12 @@ def tune_hyperparameters(repeats=2):
             print(f"WINDOW SIZE: {window_size}")
             print(f"STRIDE: {stride} \n")
             # The tag numbers we want to train on
-            train_tags = [1,2,3,5,6,8,9,10]
+            train_tags = [1,2,3]
             # The tag numbers we want to test on
             # test_tags = [1,2,3,4,5,6,7,8,9,10]
-            test_tags = [7]
+            test_tags = [8]
             # The tag numbers we want to validate with
-            validation_tags = [4]
+            validation_tags = [7]
 
             # Array of all the training data we load in from each tag
             train_inputs = []
