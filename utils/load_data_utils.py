@@ -79,8 +79,10 @@ def create_rolling_window_data(input_df, groundtruth_df, window_size = 5, stride
         # Get associated sensor data
         input_data_for_time_window = input_df.loc[(input_df['timestamp'] >= start_time) & (
             input_df['timestamp'] < end_time)]
+        
+        unused_features = ['timestamp','mag_x_uT','mag_y_uT','mag_z_uT','pressure_Pa','elevation']
         input_data_for_time_window = input_data_for_time_window.drop(
-                'timestamp', axis=1)
+                unused_features, axis=1)
         
         # Get rid of empty windows
         if len(input_data_for_time_window) == 0:
