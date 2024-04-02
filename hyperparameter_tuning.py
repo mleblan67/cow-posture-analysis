@@ -94,12 +94,12 @@ def tune_hyperparameters(repeats=2):
             print(f"WINDOW SIZE: {window_size}")
             print(f"STRIDE: {stride} \n")
             # The tag numbers we want to train on
-            train_tags = [1,2,3]
+            train_tags = [1,2,3,5,6,8,9,10]
             # The tag numbers we want to test on
             # test_tags = [1,2,3,4,5,6,7,8,9,10]
-            test_tags = [8]
+            test_tags = [7]
             # The tag numbers we want to validate with
-            validation_tags = [7]
+            validation_tags = [4]
 
             # Array of all the training data we load in from each tag
             train_inputs = []
@@ -124,7 +124,7 @@ def tune_hyperparameters(repeats=2):
                 accel_filepaths.sort() # Make sure they're in order for processing
 
                 # Only train on half the days
-                # accel_filepaths = accel_filepaths = accel_filepaths[:(int(len(accel_filepaths)/2)+1)]
+                accel_filepaths = accel_filepaths = accel_filepaths[:(int(len(accel_filepaths)/2)+1)]
                 
                 # Get groundtruth path
                 groundtruth_path = groundtruth_dir + 'T' + str(tag).zfill(2) + '_groundtruths.csv'
