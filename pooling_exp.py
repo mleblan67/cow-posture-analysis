@@ -368,4 +368,4 @@ def run_pooling_on_single_tag_single_day_behavior(repeats=3):
     print(f"OVERALL ACCURACY WAS {mean(accuracies)}")
     
 
-run_pooling_on_single_tag_single_day_behavior()
+run_pooling_on_single_tag_single_day()
