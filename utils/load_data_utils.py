@@ -50,8 +50,9 @@ def load_to_df(input_filenames, output_filename, prefix = ''):
 window size is given in minutes
 stride is given in minutes
 
+After hyperparameter tuning, defualt sizes are the best tested
 '''
-def create_rolling_window_data(input_df, groundtruth_df, window_size = 5, stride = 5):
+def create_rolling_window_data(input_df, groundtruth_df, window_size = 30, stride = 5):
 
     # Get base time difference size
     # Use 3 and 2 in case there is a problem with the first index
@@ -102,4 +103,4 @@ def create_rolling_window_data(input_df, groundtruth_df, window_size = 5, stride
         y.append(a[0])
         
 
-    return X,y
+    return np.array(X),np.array(y)

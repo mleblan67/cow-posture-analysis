@@ -138,8 +138,8 @@ def tune_hyperparameters(repeats=2):
                 print(f"Created Sliding window for tag {tag}")
 
                 # Add to array
-                train_inputs.append(np.array(X))
-                train_groundtruths.append(np.array(y))
+                train_inputs.append(X)
+                train_groundtruths.append(y)
 
                 # Manage memory
                 del [accel_input_df, groundtruth_df]
@@ -201,8 +201,8 @@ def tune_hyperparameters(repeats=2):
                 print(f"Created Sliding window for tag {tag}")
 
                 # Add to array
-                validation_inputs.append(np.array(X))
-                validation_groundtruths.append(np.array(y))
+                validation_inputs.append(X)
+                validation_groundtruths.append(y)
 
                 # Manage memory
                 del [accel_input_df, groundtruth_df]
