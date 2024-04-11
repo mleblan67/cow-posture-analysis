@@ -128,7 +128,7 @@ def run_pooling_on_single_tag_single_day(repeats=3):
         groundtruth_path = groundtruth_dir + 'T' + str(tag).zfill(2) + '_groundtruths.csv'
 
         # Load in both sensor data
-        accel_input_df, _ = load_to_df(accel_filepaths, groundtruth_path)
+        accel_input_df, groundtruth_df = load_to_df(accel_filepaths, groundtruth_path)
         # uwb_input_df, groundtruth_df = load_to_df(uwb_filepaths, groundtruth_path)
 
         # Combine all sensor data together
@@ -169,7 +169,7 @@ def run_pooling_on_single_tag_single_day(repeats=3):
         groundtruth_path = groundtruth_dir + 'T' + str(tag).zfill(2) + '_groundtruths.csv'
 
         # Load in both sensor data
-        accel_input_df, _ = load_to_df(accel_filepaths, groundtruth_path)
+        accel_input_df, groundtruth_df = load_to_df(accel_filepaths, groundtruth_path)
         # uwb_input_df, groundtruth_df = load_to_df(uwb_filepaths, groundtruth_path)
 
         # Combine all sensor data together
