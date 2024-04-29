@@ -89,8 +89,8 @@ def summarize_results(scores):
     return m
 
 def run_pooling_on_single_tag_single_day(repeats=3):
-    accel_data_prefix = '../converted_data/'
-    uwb_data_prefix = '../location_data/'
+    accel_data_prefix = 'converted_data/'
+    uwb_data_prefix = 'location_data/'
 
     # The tag numbers we want to train on
     # train_tags = [1,2,3,4,5,6,8,9,10]
@@ -112,7 +112,7 @@ def run_pooling_on_single_tag_single_day(repeats=3):
         # Build folder path
         accel_data_dir = accel_data_prefix + 'T' + str(tag).zfill(2) + '/'
         uwb_data_dir = uwb_data_prefix + 'T' + str(tag).zfill(2) + '/'
-        groundtruth_dir = 'individual_behaviors/'
+        groundtruth_dir = 'behavior_analysis/individual_behaviors/'
 
         # Get all accelerometer sensor data files for this folder
         accel_filepaths = os.listdir(accel_data_dir)
@@ -125,7 +125,7 @@ def run_pooling_on_single_tag_single_day(repeats=3):
         # uwb_filepaths.sort() # Make sure they're in order for processing
         
         # Get groundtruth path
-        groundtruth_path = 'C' + str(tag).zfill(2) + '_0725.csv'
+        groundtruth_path = groundtruth_dir + 'C' + str(tag).zfill(2) + '_0725.csv'
 
         # Load in both sensor data
         accel_input_df, groundtruth_df = load_to_df(accel_filepaths, groundtruth_path)
