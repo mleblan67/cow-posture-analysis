@@ -6,11 +6,13 @@ from numpy import mean
 from numpy import std
 from numpy import asarray
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix
 from matplotlib import pyplot as plt
 from pandas import merge
 import pandas as pd
 import datetime
 import numpy as np
+import seaborn as sns
 
 from utils.load_data_utils import load_to_df, create_rolling_window_data
 from utils.features_utils import add_svm_feature
@@ -28,7 +30,7 @@ session = InteractiveSession(config=config)
 
 # Train and evaluate a model
 def build_model(trainX, trainy, testX, testy):
-    verbose, epochs, batch_size = 1, 10, 32
+    verbose, epochs, batch_size = 1, 15, 32
     n_timesteps, n_features, n_outputs = trainX.shape[1], trainX.shape[2], trainy.shape[1]
     n_batches = trainX.shape[0]
 
@@ -40,7 +42,25 @@ def build_model(trainX, trainy, testX, testy):
     _, accuracy = model.evaluate(
         testX, testy, batch_size=batch_size, verbose=0)
     
+    get_confusion_matrix(model, testX, testy)
+    
     return accuracy
+
+def get_confusion_matrix(model, testX, testy):
+    y_pred = model.predict(testX)
+
+    # One hot encoding back to single int
+    y_pred_classes = np.argmax(y_pred, axis=1)
+    y_test_classes = np.argmax(testy, axis=1)
+
+    conf_matrix = confusion_matrix(y_test_classes, y_pred_classes)
+
+    plt.figure(figsize=(6, 4))
+    sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', xticklabels=['1', '2', '3', '4','5','6','7'], yticklabels=['1', '2', '3', '4','5','6','7'])
+    plt.xlabel('Predicted Labels')
+    plt.ylabel('True Labels')
+    plt.title('Confusion Matrix')
+    plt.savefig('raw_accel_conf_matrix.png')
 
 def graph_model(trainX, trainy, testX, testy):
     verbose, epochs, batch_size = 0, 10, 32
