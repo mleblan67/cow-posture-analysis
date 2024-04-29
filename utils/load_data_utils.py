@@ -43,7 +43,7 @@ def load_to_df(input_filenames, output_filename, prefix = ''):
     # offset = 3600*5
     # groundtruth_data['Unixtime'] = groundtruth_data['Unixtime'] + offset
 
-    groundtruth_data.rename(columns={"timestamp":"Unixtime"})
+    groundtruth_data.rename(columns={"timestamp":"Unixtime"}, inplace=True)
     return standardized_input, groundtruth_data
 
 
