@@ -76,7 +76,7 @@ def create_rolling_window_data(input_df, groundtruth_df, window_size = 30, strid
         # Check to make sure this isn't a transition period
         # also get rid of unknown behavior (0)
         a = groundtruth_data_for_time_window["behavior"].to_list() # df.values
-        if not (len(set(a)) == 1) or set(a)[0] == 0:
+        if not (len(set(a)) == 1) or a[0] == 0:
             continue
 
         # Get associated sensor data
