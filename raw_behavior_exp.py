@@ -30,7 +30,7 @@ session = InteractiveSession(config=config)
 
 # Train and evaluate a model
 def build_model(trainX, trainy, testX, testy):
-    verbose, epochs, batch_size = 1, 15, 32
+    verbose, epochs, batch_size = 0, 15, 32
     n_timesteps, n_features, n_outputs = trainX.shape[1], trainX.shape[2], trainy.shape[1]
     n_batches = trainX.shape[0]
 
@@ -156,7 +156,7 @@ def run_exp(repeats=3):
 
         print(f"Loaded in tag {tag}")
         # Create sliding window
-        X, y = create_rolling_window_data(accel_input_df, groundtruth_df,window_size=30, stride=15)
+        X, y = create_rolling_window_data(accel_input_df, groundtruth_df,window_size=20, stride=10)
         print(f"Created Sliding window for tag {tag} \n")
 
         # Add to array
@@ -197,7 +197,7 @@ def run_exp(repeats=3):
 
         print(f"Loaded in tag {tag}")
         # Create sliding window
-        X, y = create_rolling_window_data(accel_input_df, groundtruth_df)
+        X, y = create_rolling_window_data(accel_input_df, groundtruth_df,window_size=20,stride=10)
         print(f"Created Sliding window for tag {tag} \n")
 
         # Add to array
