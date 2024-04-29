@@ -88,7 +88,7 @@ def summarize_results(scores):
 
     return m
 
-def run_pooling_on_single_tag_single_day(repeats=3):
+def run_exp(repeats=3):
     accel_data_prefix = 'converted_data/'
     uwb_data_prefix = 'location_data/'
 
@@ -249,3 +249,5 @@ def run_pooling_on_single_tag_single_day(repeats=3):
         accuracies.append(m)
 
     print(f"OVERALL ACCURACY WAS {mean(accuracies)}")
+
+run_exp()
