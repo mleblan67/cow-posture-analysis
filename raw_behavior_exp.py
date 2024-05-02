@@ -291,7 +291,7 @@ def run_wv_exp(repeats=3):
     test_groundtruths = []
 
     # Wavelet constants
-    waveletname = "mexh"
+    waveletname = "morl"
     scales = range(1,201)
 
 
@@ -324,7 +324,7 @@ def run_wv_exp(repeats=3):
 
         print(f"Loaded in tag {tag}")
         # Create sliding window
-        X, y = create_rolling_window_data(accel_input_df, groundtruth_df,window_size=20, stride=5)
+        X, y = create_rolling_window_data(accel_input_df, groundtruth_df,window_size=20, stride=10)
         print(f"Created Sliding window for tag {tag} \n")
 
          # Create wavelets
@@ -376,7 +376,7 @@ def run_wv_exp(repeats=3):
 
         print(f"Loaded in tag {tag}")
         # Create sliding window
-        X, y = create_rolling_window_data(accel_input_df, groundtruth_df,window_size=20,stride=5)
+        X, y = create_rolling_window_data(accel_input_df, groundtruth_df,window_size=20,stride=10)
         print(f"Created Sliding window for tag {tag} \n")
 
         # Create wavelets
