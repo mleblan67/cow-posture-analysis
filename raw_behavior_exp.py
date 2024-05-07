@@ -324,7 +324,7 @@ def run_wv_exp(repeats=3):
 
         print(f"Loaded in tag {tag}")
         # Create sliding window
-        X, y = create_rolling_window_data(accel_input_df, groundtruth_df,window_size=20, stride=10)
+        X, y = create_rolling_window_data(input_df, groundtruth_df,window_size=20, stride=10)
         print(f"Created Sliding window for tag {tag} \n")
 
         channels = X.shape[2]
@@ -374,7 +374,7 @@ def run_wv_exp(repeats=3):
 
         print(f"Loaded in tag {tag}")
         # Create sliding window
-        X, y = create_rolling_window_data(accel_input_df, groundtruth_df,window_size=20,stride=10)
+        X, y = create_rolling_window_data(input_df, groundtruth_df,window_size=20,stride=10)
         print(f"Created Sliding window for tag {tag} \n")
 
         channels = X.shape[2]
