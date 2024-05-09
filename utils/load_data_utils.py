@@ -21,7 +21,7 @@ def load_to_df(input_filenames, output_filename, prefix = ''):
     end_timestamp = input_data.iloc[-1]['timestamp']
     # Generate time steps at the same rate as the input data
     # delta = input_data.iloc[1]['timestamp'] - input_data.iloc[0]['timestamp']
-    delta = 0.1 #Make delta standard in order to upsample UWB
+    delta = 0.1 # Make delta standard in order to upsample UWB
 
     timestamp_range = np.arange(start_timestamp,end_timestamp+delta,delta)
     timestamp_range = np.round(timestamp_range,1)
