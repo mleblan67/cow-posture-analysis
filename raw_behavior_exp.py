@@ -149,7 +149,7 @@ def run_exp(repeats=3):
 
         # Get all UWB sensor data files for this folder
         uwb_filepaths = os.listdir(uwb_data_dir)
-        uwb_filepaths = [uwb_data_dir + file for file in uwb_filepaths if file.startswith('uwb_loc') and file.endswith('.csv')]
+        uwb_filepaths = [uwb_data_dir + file for file in uwb_filepaths if file.startswith('uwb_loc') and file.endswith('0725.csv')]
         uwb_filepaths.sort() # Make sure they're in order for processing
         
         # Get groundtruth path
