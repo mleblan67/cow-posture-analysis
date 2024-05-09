@@ -148,32 +148,28 @@ def run_exp(repeats=3):
         accel_filepaths.sort() # Make sure they're in order for processing
 
         # Get all UWB sensor data files for this folder
-        # uwb_filepaths = os.listdir(uwb_data_dir)
-        # uwb_filepaths = [uwb_data_dir + file for file in uwb_filepaths if file.startswith('uwb_loc') and file.endswith('.csv')]
-        # uwb_filepaths.sort() # Make sure they're in order for processing
+        uwb_filepaths = os.listdir(uwb_data_dir)
+        uwb_filepaths = [uwb_data_dir + file for file in uwb_filepaths if file.startswith('uwb_loc') and file.endswith('.csv')]
+        uwb_filepaths.sort() # Make sure they're in order for processing
         
         # Get groundtruth path
         groundtruth_path = groundtruth_dir + 'C' + str(tag).zfill(2) + '_0725.csv'
 
         # Load in both sensor data
         accel_input_df, groundtruth_df = load_to_df(accel_filepaths, groundtruth_path)
-        # uwb_input_df, groundtruth_df = load_to_df(uwb_filepaths, groundtruth_path)
+        uwb_input_df, _ = load_to_df(uwb_filepaths, groundtruth_path)
 
         # Combine all sensor data together
-        # input_df = merge(accel_input_df, uwb_input_df, how='outer', on='timestamp')
+        input_df = merge(accel_input_df, uwb_input_df, how='outer', on='timestamp')
 
         print(f"Loaded in tag {tag}")
         # Create sliding window
-        X, y = create_rolling_window_data(accel_input_df, groundtruth_df, window_size=20, stride=10)
+        X, y = create_rolling_window_data(input_df, groundtruth_df, window_size=20, stride=10)
         print(f"Created Sliding window for tag {tag} \n")
 
         # Add to array
         train_inputs.append(X)
         train_groundtruths.append(y)
-
-        # Manage memory
-        del [accel_input_df, groundtruth_df]
-        gc.collect()
 
 
     # Load in all the testing (just one day)
@@ -189,32 +185,28 @@ def run_exp(repeats=3):
         accel_filepaths.sort() # Make sure they're in order for processing
 
         # Get all UWB sensor data files for this folder
-        # uwb_filepaths = os.listdir(uwb_data_dir)
-        # uwb_filepaths = [uwb_data_dir + file for file in uwb_filepaths if file.startswith('uwb_loc') and file.endswith('0725.csv')]
-        # uwb_filepaths.sort() # Make sure they're in order for processing
+        uwb_filepaths = os.listdir(uwb_data_dir)
+        uwb_filepaths = [uwb_data_dir + file for file in uwb_filepaths if file.startswith('uwb_loc') and file.endswith('0725.csv')]
+        uwb_filepaths.sort() # Make sure they're in order for processing
         
         # Get groundtruth path
         groundtruth_path = groundtruth_dir + 'C' + str(tag).zfill(2) + '_0725.csv'
 
         # Load in both sensor data
         accel_input_df, groundtruth_df = load_to_df(accel_filepaths, groundtruth_path)
-        # uwb_input_df, groundtruth_df = load_to_df(uwb_filepaths, groundtruth_path)
+        uwb_input_df, _ = load_to_df(uwb_filepaths, groundtruth_path)
 
         # Combine all sensor data together
-        # input_df = merge(accel_input_df, uwb_input_df, how='outer', on='timestamp')
+        input_df = merge(accel_input_df, uwb_input_df, how='outer', on='timestamp')
 
         print(f"Loaded in tag {tag}")
         # Create sliding window
-        X, y = create_rolling_window_data(accel_input_df, groundtruth_df,window_size=20,stride=10)
+        X, y = create_rolling_window_data(input_df, groundtruth_df,window_size=20,stride=10)
         print(f"Created Sliding window for tag {tag} \n")
 
         # Add to array
         test_inputs.append(X)
         test_groundtruths.append(y)
-
-        # Manage memory
-        del [accel_input_df, groundtruth_df]
-        gc.collect()
 
 
     accuracies = []
