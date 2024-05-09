@@ -25,7 +25,7 @@ def CNN(n_timesteps, n_features, n_outputs):
     model.add(Flatten())
     model.add(Dense(100, activation='relu'))
     model.add(Dense(n_outputs, activation='softmax'))
-    model.compile(loss='categorical_focal_crossentropy',
+    model.compile(loss='categorical_crossentropy',
                   optimizer='adam', metrics=['accuracy'])
 
     return model
