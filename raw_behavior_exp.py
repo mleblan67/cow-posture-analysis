@@ -19,6 +19,7 @@ from utils.load_data_utils import load_to_df, create_rolling_window_data
 from utils.features_utils import add_svm_feature
 from models import CNN, CNN2D
 from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.callbacks import EarlyStopping
 
 
 # Copied from internet to get rid of error
@@ -31,13 +32,19 @@ session = InteractiveSession(config=config)
 
 # Train and evaluate a model
 def build_model(trainX, trainy, testX, testy):
-    verbose, epochs, batch_size = 0, 15, 32
-    wv_x, wv_y, wv_channels, num_classes = trainX.shape[1], trainX.shape[2], trainX.shape[3], trainy.shape[1]
+    early_stop = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
 
-    model = CNN2D(wv_x, wv_y, wv_channels, num_classes)
+    verbose, epochs, batch_size = 0, 15, 64
+    # wv_x, wv_y, wv_channels, num_classes = trainX.shape[1], trainX.shape[2], trainX.shape[3], trainy.shape[1]
+    n_timesteps, n_features, n_outputs = trainX.shape[1], trainX.shape[2], trainy.shape[1]
+
+    # model = CNN2D(wv_x, wv_y, wv_channels, num_classes)
+    model = CNN(n_timesteps, n_features, n_outputs)
+
     # fit network
     model.fit(trainX, trainy, epochs=epochs,
-              batch_size=batch_size, verbose=verbose)
+              batch_size=batch_size, verbose=verbose,
+              callbacks=[early_stop])
     # evaluate model
     _, accuracy = model.evaluate(
         testX, testy, batch_size=batch_size, verbose=0)
@@ -156,7 +163,7 @@ def run_exp(repeats=3):
 
         print(f"Loaded in tag {tag}")
         # Create sliding window
-        X, y = create_rolling_window_data(accel_input_df, groundtruth_df,window_size=20, stride=10)
+        X, y = create_rolling_window_data(accel_input_df, groundtruth_df, window_size=20, stride=10)
         print(f"Created Sliding window for tag {tag} \n")
 
         # Add to array
@@ -325,7 +332,7 @@ def run_wv_exp(repeats=3):
         print(f"Loaded in tag {tag}")
         # Create sliding window
         X, y = create_rolling_window_data(input_df, groundtruth_df,window_size=20, stride=10)
-        print(f"Created Sliding window for tag {tag} \n")
+        print(f"Created Sliding window for tag {tag}")
 
         channels = X.shape[2]
 
@@ -339,6 +346,8 @@ def run_wv_exp(repeats=3):
                 signal = window[si]
                 coeff, _ = pywt.cwt(signal, scales, waveletname, 1)
                 wvs[wi, :, :, si] = coeff
+        
+        print(f"Created CWT for tag {tag} \n")
 
         # Add to array
         train_inputs.append(wvs)
@@ -375,7 +384,7 @@ def run_wv_exp(repeats=3):
         print(f"Loaded in tag {tag}")
         # Create sliding window
         X, y = create_rolling_window_data(input_df, groundtruth_df,window_size=20,stride=10)
-        print(f"Created Sliding window for tag {tag} \n")
+        print(f"Created Sliding window for tag {tag}")
 
         channels = X.shape[2]
 
@@ -389,6 +398,8 @@ def run_wv_exp(repeats=3):
                 signal = window[si]
                 coeff, _ = pywt.cwt(signal, scales, waveletname, 1)
                 wvs[wi, :, :, si] = coeff
+
+        print(f"Created CWT for tag {tag} \n")
 
         # Add to array
         test_inputs.append(wvs)
@@ -453,4 +464,4 @@ def run_wv_exp(repeats=3):
     print(f"OVERALL ACCURACY WAS {mean(accuracies)}")
 
 
-run_wv_exp()
+run_exp()
