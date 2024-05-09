@@ -44,7 +44,8 @@ def build_model(trainX, trainy, testX, testy):
     # fit network
     model.fit(trainX, trainy, epochs=epochs,
               batch_size=batch_size, verbose=verbose,
-              callbacks=[early_stop])
+              validation_split=0.2, callbacks=[early_stop])
+    
     # evaluate model
     _, accuracy = model.evaluate(
         testX, testy, batch_size=batch_size, verbose=0)
