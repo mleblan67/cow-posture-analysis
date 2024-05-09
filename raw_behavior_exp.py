@@ -35,11 +35,11 @@ def build_model(trainX, trainy, testX, testy):
     early_stop = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
 
     verbose, epochs, batch_size = 0, 15, 64
-    # wv_x, wv_y, wv_channels, num_classes = trainX.shape[1], trainX.shape[2], trainX.shape[3], trainy.shape[1]
+    wv_x, wv_y, wv_channels, num_classes = trainX.shape[1], trainX.shape[2], trainX.shape[3], trainy.shape[1]
     n_timesteps, n_features, n_outputs = trainX.shape[1], trainX.shape[2], trainy.shape[1]
 
-    # model = CNN2D(wv_x, wv_y, wv_channels, num_classes)
-    model = CNN(n_timesteps, n_features, n_outputs)
+    model = CNN2D(wv_x, wv_y, wv_channels, num_classes)
+    # model = CNN(n_timesteps, n_features, n_outputs)
 
     # fit network
     model.fit(trainX, trainy, epochs=epochs,
@@ -329,8 +329,8 @@ def run_wv_exp(repeats=3):
 
         channels = X.shape[2]
 
-         # Create wavelets
-        wvs = np.ndarray((len(X),200,200,channels))
+        # Create wavelets
+        wvs = np.ndarray((X.shape[0],200,200,channels))
 
         for wi in range(len(X)):
             # Transpose into X, Y, and Z channels
@@ -382,7 +382,7 @@ def run_wv_exp(repeats=3):
         channels = X.shape[2]
 
         # Create wavelets
-        wvs = np.ndarray((len(X),200,200,channels))
+        wvs = np.ndarray((X.shape[0],200,200,channels))
 
         for wi in range(len(X)):
             # Transpose into X, Y, and Z channels
@@ -457,4 +457,4 @@ def run_wv_exp(repeats=3):
     print(f"OVERALL ACCURACY WAS {mean(accuracies)}")
 
 
-run_exp()
+run_wv_exp()
