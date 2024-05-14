@@ -103,10 +103,8 @@ def run_exp(repeats=3):
     uwb_data_prefix = 'location_data/'
 
     # The tag numbers we want to train on
-    # train_tags = [1,2,3,4,5,6,8,9,10]
-    train_tags = [3,5,8,9,10]
+    train_tags = [1,2,3,4,5,8,9,10]
     # The tag numbers we want to test on
-    # test_tags = [1,2,3,4,5,6,7,8,9,10]
     test_tags = [7]
 
     # Array of all the training data we load in from each tag
