@@ -29,6 +29,7 @@ config = ConfigProto()
 config.gpu_options.allow_growth = True
 session = InteractiveSession(config=config)
 
+
 # Train and evaluate a model
 def build_model(trainX, trainy, testX, testy):
     early_stop = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
@@ -43,7 +44,7 @@ def build_model(trainX, trainy, testX, testy):
     # fit network
     model.fit(trainX, trainy, epochs=epochs,
               batch_size=batch_size, verbose=verbose,
-              validation_split=0.2, callbacks=[early_stop])
+              validation_split=0.3, callbacks=[early_stop])
     
     # evaluate model
     _, accuracy = model.evaluate(
@@ -64,15 +65,39 @@ def build_multihead_model(trainX_accel, trainX_uwb, trainy, testX_accel, testX_u
     # fit network
     model.fit([trainX_accel, trainX_uwb], trainy, epochs=epochs,
               batch_size=batch_size, verbose=verbose,
-              validation_split=0.2, callbacks=[early_stop])
+              validation_split=0.3, callbacks=[early_stop])
     
     # evaluate model
-    _, accuracy = model.evaluate(
+    _, accuracy, f1_score = model.evaluate(
         [testX_accel, testX_uwb], testy, batch_size=batch_size, verbose=0)
     
     # get_confusion_matrix(model, testX, testy)
+    # get_class_accuracies(model, testX_accel, testX_uwb, testy)
     
-    return accuracy
+    return accuracy, f1_score
+
+def get_class_accuracies(model, accel_testX, uwb_testX, testy):
+    y_pred = model.predict([accel_testX, uwb_testX])
+
+    # One hot encoding back to single int
+    y_pred_classes = np.argmax(y_pred, axis=1)
+    y_test_classes = np.argmax(testy, axis=1)
+
+    conf_matrix = confusion_matrix(y_test_classes, y_pred_classes)
+
+    num_classes = conf_matrix.shape[0]
+    acc_per_class = np.zeros(num_classes)
+    
+    for i in range(num_classes):
+        true_positive = conf_matrix[i, i]
+        false_negative = np.sum(conf_matrix[i, :]) - true_positive
+        acc_per_class[i] = true_positive / (true_positive + false_negative)
+    
+    # Print accuracy for each class
+    for i, acc in zip(range(num_classes), acc_per_class):
+        print(f"Class {i+1}: {acc:.2f}")
+
+
 
 def get_confusion_matrix(model, testX, testy):
     y_pred = model.predict(testX)
@@ -98,7 +123,7 @@ def summarize_results(scores):
 
     return m
 
-def run_exp(repeats=5):
+def run_exp(repeats=3):
     accel_data_prefix = 'converted_data/'
     uwb_data_prefix = 'location_data/'
 
@@ -227,14 +252,14 @@ def run_exp(repeats=5):
                 
 
         # One-hot encoding
-        y_train = to_categorical(y_train)
+        y_train = to_categorical(y_train - 1, num_classes = 7)
 
         # Prepare testing data
         accel_X_test = accel_test_inputs[test_tag_i]
         uwb_X_test = uwb_test_inputs[test_tag_i]
         y_test = test_groundtruths[test_tag_i]
 
-        y_test = to_categorical(y_test)
+        y_test = to_categorical(y_test - 1, num_classes = 7)
 
         # Train/Test split for data
         print("Training data shape: (X) (y)")
@@ -248,17 +273,18 @@ def run_exp(repeats=5):
         # graph_model(X_train, y_train, X_test, y_test)
 
         # repeat experiment
-        scores = list()
+        accuracies = list()
+        f1_scores = list()
+        print('      F1    \tAcc')
         for r in range(repeats):
-            score = build_multihead_model(accel_X_train, uwb_X_train, y_train, accel_X_test, uwb_X_test, y_test)
-            score = score * 100.0
-            print('>#%d: %.3f' % (r+1, score))
-            scores.append(score)
+            acc, f1_score = build_multihead_model(accel_X_train, uwb_X_train, y_train, accel_X_test, uwb_X_test, y_test)
+            acc = acc * 100.0
+            f1_score = f1_score * 100.0
+            print('>#%d:  %.3f\t%.3f' % (r+1, acc, f1_score))
+            accuracies.append(acc)
+            f1_scores.append(f1_score)
         # summarize results
-        m = summarize_results(scores)
-        accuracies.append(m)
-
-    print(f"OVERALL ACCURACY WAS {mean(accuracies)}")
+        print('      %.3f\t%.3f' % (mean(accuracies), mean(f1_scores)))
 
 
 
@@ -445,6 +471,5 @@ def run_wv_exp(repeats=3):
         accuracies.append(m)
 
     print(f"OVERALL ACCURACY WAS {mean(accuracies)}")
-
 
 run_exp()
