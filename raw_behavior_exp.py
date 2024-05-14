@@ -98,7 +98,7 @@ def summarize_results(scores):
 
     return m
 
-def run_exp(repeats=3):
+def run_exp(repeats=5):
     accel_data_prefix = 'converted_data/'
     uwb_data_prefix = 'location_data/'
 
