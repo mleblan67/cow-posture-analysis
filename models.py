@@ -42,11 +42,11 @@ def multihead_CNN(n_timesteps, n1_features, n2_features, n_outputs):
     conv10 = Conv1D(filters=32, kernel_size=4, activation='relu')(inputs1)
     conv11 = Conv1D(filters=32, kernel_size=4, activation='relu')(conv10)
     pool10 = MaxPooling1D(pool_size=2)(conv11)
-    drop10 = Dropout(0.5)(pool10)
+    drop10 = Dropout(0.2)(pool10)
     conv12 = Conv1D(filters=64, kernel_size=4, activation='relu')(drop10)
     conv13 = Conv1D(filters=64, kernel_size=4, activation='relu')(conv12)
     pool11 = MaxPooling1D(pool_size=2)(conv13)
-    drop11 = Dropout(0.5)(pool11)
+    drop11 = Dropout(0.2)(pool11)
     flat1 = Flatten()(drop11)
 
     # head 2: for uwb data
@@ -54,11 +54,11 @@ def multihead_CNN(n_timesteps, n1_features, n2_features, n_outputs):
     conv20 = Conv1D(filters=32, kernel_size=4, activation='relu')(inputs2)
     conv21 = Conv1D(filters=32, kernel_size=4, activation='relu')(conv20)
     pool20 = MaxPooling1D(pool_size=2)(conv21)
-    drop20 = Dropout(0.5)(pool20)
-    conv22 = Conv1D(filters=32, kernel_size=4, activation='relu')(drop20)
-    conv23 = Conv1D(filters=32, kernel_size=4, activation='relu')(conv22)
+    drop20 = Dropout(0.2)(pool20)
+    conv22 = Conv1D(filters=64, kernel_size=4, activation='relu')(drop20)
+    conv23 = Conv1D(filters=64, kernel_size=4, activation='relu')(conv22)
     pool21 = MaxPooling1D(pool_size=2)(conv23)
-    drop21 = Dropout(0.5)(pool21)
+    drop21 = Dropout(0.2)(pool21)
     flat2 = Flatten()(drop20)
         
     # merge
