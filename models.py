@@ -37,7 +37,7 @@ Accel data is data 1
 UWB is data 2
 '''
 def multihead_CNN(n_timesteps, n1_features, n2_features, n_outputs):
-    # head 1
+    # head 1: for accel data
     inputs1 = Input(shape=(n_timesteps, n1_features))
     conv10 = Conv1D(filters=32, kernel_size=4, activation='relu')(inputs1)
     conv11 = Conv1D(filters=32, kernel_size=4, activation='relu')(conv10)
@@ -49,17 +49,17 @@ def multihead_CNN(n_timesteps, n1_features, n2_features, n_outputs):
     drop11 = Dropout(0.5)(pool11)
     flat1 = Flatten()(drop11)
 
-    # head 2
+    # head 2: for uwb data
     inputs2 = Input(shape=(n_timesteps, n2_features))
-    conv20 = Conv1D(filters=32, kernel_size=4, activation='relu')(inputs2)
-    conv21 = Conv1D(filters=32, kernel_size=4, activation='relu')(conv20)
+    conv20 = Conv1D(filters=32, kernel_size=2, activation='relu')(inputs2)
+    conv21 = Conv1D(filters=32, kernel_size=2, activation='relu')(conv20)
     pool20 = MaxPooling1D(pool_size=2)(conv21)
     drop20 = Dropout(0.5)(pool20)
-    conv22 = Conv1D(filters=32, kernel_size=4, activation='relu')(drop20)
-    conv23 = Conv1D(filters=32, kernel_size=4, activation='relu')(conv22)
-    pool21 = MaxPooling1D(pool_size=2)(conv23)
-    drop21 = Dropout(0.5)(pool21)
-    flat2 = Flatten()(drop21)
+    # conv22 = Conv1D(filters=32, kernel_size=4, activation='relu')(drop20)
+    # conv23 = Conv1D(filters=32, kernel_size=4, activation='relu')(conv22)
+    # pool21 = MaxPooling1D(pool_size=2)(conv23)
+    # drop21 = Dropout(0.5)(pool21)
+    flat2 = Flatten()(drop20)
         
     # merge
     merged = concatenate([flat1, flat2])
