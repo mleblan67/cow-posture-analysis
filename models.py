@@ -1,10 +1,11 @@
-from tensorflow.keras import Input
+from tensorflow.keras import Input, Model
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.layers import Flatten
 from tensorflow.keras.layers import Dropout
 from tensorflow.keras.layers import Conv1D, Conv2D
 from tensorflow.keras.layers import MaxPooling1D, MaxPooling2D
+from tensorflow.keras.layers.merge import concatenate
 
 
 '''
@@ -29,6 +30,50 @@ def CNN(n_timesteps, n_features, n_outputs):
                   optimizer='adam', metrics=['accuracy'])
 
     return model
+
+'''
+Multi-headed CNN
+Accel data is data 1
+UWB is data 2
+'''
+def multihead_CNN(n_timesteps, n1_features, n2_features, n_outputs):
+    # head 1
+    inputs1 = Input(shape=(n_timesteps, n1_features))
+    conv10 = Conv1D(filters=32, kernel_size=4, activation='relu')(inputs1)
+    conv11 = Conv1D(filters=32, kernel_size=4, activation='relu')(conv10)
+    pool10 = MaxPooling1D(pool_size=2)(conv11)
+    drop10 = Dropout(0.5)(pool10)
+    conv12 = Conv1D(filters=32, kernel_size=4, activation='relu')(drop10)
+    conv13 = Conv1D(filters=32, kernel_size=4, activation='relu')(conv12)
+    pool11 = MaxPooling1D(pool_size=2)(conv13)
+    drop11 = Dropout(0.5)(pool11)
+    flat1 = Flatten()(drop11)
+
+    # head 2
+    inputs2 = Input(shape=(n_timesteps, n2_features))
+    conv20 = Conv1D(filters=32, kernel_size=4, activation='relu')(inputs2)
+    conv21 = Conv1D(filters=32, kernel_size=4, activation='relu')(conv20)
+    pool20 = MaxPooling1D(pool_size=2)(conv21)
+    drop20 = Dropout(0.5)(pool20)
+    conv22 = Conv1D(filters=32, kernel_size=4, activation='relu')(drop20)
+    conv23 = Conv1D(filters=32, kernel_size=4, activation='relu')(conv22)
+    pool21 = MaxPooling1D(pool_size=2)(conv23)
+    drop21 = Dropout(0.5)(pool21)
+    flat2 = Flatten()(drop21)
+        
+    # merge
+    merged = concatenate([flat1, flat2])
+    # interpretation
+    dense1 = Dense(100, activation='relu')(merged)
+    outputs = Dense(n_outputs, activation='softmax')(dense1)
+    model = Model(inputs=[inputs1, inputs2], outputs=outputs)
+
+    model.compile(loss='categorical_crossentropy',
+                  optimizer='adam', metrics=['accuracy'])
+
+    return model
+    
+
 
 def CNN2D(wv_x, wv_y, wv_channels, num_classes):
     model = Sequential()

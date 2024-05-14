@@ -17,14 +17,13 @@ import seaborn as sns
 
 from utils.load_data_utils import load_to_df, create_rolling_window_data
 from utils.features_utils import add_svm_feature
-from models import CNN, CNN2D
+from models import CNN, CNN2D, multihead_CNN
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.callbacks import EarlyStopping
-
-
 # Copied from internet to get rid of error
 from tensorflow.compat.v1 import ConfigProto
 from tensorflow.compat.v1 import InteractiveSession
+
 
 config = ConfigProto()
 config.gpu_options.allow_growth = True
@@ -54,6 +53,27 @@ def build_model(trainX, trainy, testX, testy):
     
     return accuracy
 
+def build_multihead_model(trainX_accel, trainX_uwb, trainy, testX_accel, testX_uwb, testy):
+    early_stop = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
+
+    verbose, epochs, batch_size = 0, 15, 64
+    n_timesteps, n1_features, n2_features, n_outputs = trainX_accel.shape[1], trainX_accel.shape[2], trainX_uwb.shape[2], trainy.shape[1]
+
+    model = multihead_CNN(n_timesteps, n1_features, n2_features, n_outputs)
+
+    # fit network
+    model.fit([trainX_accel, trainX_uwb], trainy, epochs=epochs,
+              batch_size=batch_size, verbose=verbose,
+              validation_split=0.2, callbacks=[early_stop])
+    
+    # evaluate model
+    _, accuracy = model.evaluate(
+        [testX_accel, trainX_uwb], testy, batch_size=batch_size, verbose=0)
+    
+    # get_confusion_matrix(model, testX, testy)
+    
+    return accuracy
+
 def get_confusion_matrix(model, testX, testy):
     y_pred = model.predict(testX)
 
@@ -69,44 +89,6 @@ def get_confusion_matrix(model, testX, testy):
     plt.ylabel('True Labels')
     plt.title('Confusion Matrix')
     plt.savefig('raw_accel_conf_matrix.png')
-
-def graph_model(trainX, trainy, testX, testy):
-    verbose, epochs, batch_size = 0, 10, 32
-    n_timesteps, n_features, n_outputs = trainX.shape[1], trainX.shape[2], trainy.shape[1]
-    n_batches = trainX.shape[0]
-
-    model = CNN(n_timesteps, n_features, n_outputs)
-    # model = CNN_LSTM(n_timesteps, n_features, n_outputs)
-    # fit network
-    model.fit(trainX, trainy, epochs=epochs,
-              batch_size=batch_size, verbose=verbose)
-    # evaluate model
-    # _, accuracy = model.evaluate(
-    #     testX, testy, batch_size=batch_size, verbose=0)
-    
-    predictions = model.predict(testX)
-
-    testy = [val[0] for val in testy]
-    predictions = [val[0] for val in predictions]
-
-    plt.plot(testy, label = "Groundtruth", color='blue', linestyle='solid')
-    plt.plot(predictions, label = "Prediction", color='red', linestyle='dashed')
-
-    plt.legend()
-    plt.xlabel("Time")
-    plt.ylabel("Standing")
-    plt.yticks([0,1], ["Sitting", "Standing"])
-
-    base = pd.to_datetime(1690261200.0, unit='s')
-    timestamp_list = [base + datetime.timedelta(minutes=x*5) for x in range(0,200,20)]
-    times = [f'{x.hour}:{str(x.minute).zfill(2)}' for x in timestamp_list]
-
-    plt.xticks(range(0,200,20), times)
-
-    plt.title('T07 07/25 UWB')
-
-    plt.savefig('UWB_Accuracies.png')
-    # return accuracy
 
 # summarize scores
 def summarize_results(scores):
@@ -128,10 +110,12 @@ def run_exp(repeats=3):
     test_tags = [7]
 
     # Array of all the training data we load in from each tag
-    train_inputs = []
+    accel_train_inputs = []
+    uwb_train_inputs = []
     train_groundtruths = []
     # Array of all the testing data we load in from each tag
-    test_inputs = []
+    accel_test_inputs = []
+    uwb_test_inputs = []
     test_groundtruths = []
 
 
@@ -160,15 +144,17 @@ def run_exp(repeats=3):
         uwb_input_df, _ = load_to_df(uwb_filepaths, groundtruth_path)
 
         # Combine all sensor data together
-        input_df = merge(accel_input_df, uwb_input_df, how='outer', on='timestamp')
+        # input_df = merge(accel_input_df, uwb_input_df, how='outer', on='timestamp')
 
         print(f"Loaded in tag {tag}")
         # Create sliding window
-        X, y = create_rolling_window_data(input_df, groundtruth_df, window_size=20, stride=10)
+        accel_X, y = create_rolling_window_data(accel_input_df, groundtruth_df, window_size=20, stride=10)
+        uwb_X, _ = create_rolling_window_data(uwb_input_df, groundtruth_df, window_size=20, stride=10)
         print(f"Created Sliding window for tag {tag} \n")
 
         # Add to array
-        train_inputs.append(X)
+        accel_train_inputs.append(accel_X)
+        uwb_train_inputs.append(uwb_X)
         train_groundtruths.append(y)
 
 
@@ -197,15 +183,17 @@ def run_exp(repeats=3):
         uwb_input_df, _ = load_to_df(uwb_filepaths, groundtruth_path)
 
         # Combine all sensor data together
-        input_df = merge(accel_input_df, uwb_input_df, how='outer', on='timestamp')
+        # input_df = merge(accel_input_df, uwb_input_df, how='outer', on='timestamp')
 
         print(f"Loaded in tag {tag}")
         # Create sliding window
-        X, y = create_rolling_window_data(input_df, groundtruth_df,window_size=20,stride=10)
+        accel_X, y = create_rolling_window_data(accel_input_df, groundtruth_df, window_size=20, stride=10)
+        uwb_X, _ = create_rolling_window_data(uwb_input_df, groundtruth_df, window_size=20, stride=10)
         print(f"Created Sliding window for tag {tag} \n")
 
         # Add to array
-        test_inputs.append(X)
+        accel_test_inputs.append(accel_X)
+        uwb_test_inputs.append(uwb_X)
         test_groundtruths.append(y)
 
 
@@ -216,7 +204,8 @@ def run_exp(repeats=3):
 
         # Prepare training data
         # Combine all training data
-        X_train = np.array([])
+        accel_X_train = np.array([])
+        uwb_X_train = np.array([])
         y_train = np.array([])
 
         for i in range(len(train_tags)):
@@ -226,10 +215,12 @@ def run_exp(repeats=3):
 
             # X_train += train_inputs[i]
             # y_train += train_groundtruths[i]
-            if X_train.shape[0] == 0:
-                X_train = np.copy(train_inputs[i])
+            if accel_X_train.shape[0] == 0:
+                accel_X_train = np.copy(accel_train_inputs[i])
+                uwb_X_train = np.copy(uwb_train_inputs[i])
             else:
-                X_train = np.vstack([X_train, train_inputs[i]])
+                accel_X_train = np.vstack([accel_X_train, accel_train_inputs[i]])
+                uwb_X_train = np.vstack([uwb_X_train, uwb_train_inputs[i]])
             
             if y_train.shape[0] == 0:
                 y_train = np.copy(train_groundtruths[i])
@@ -241,26 +232,27 @@ def run_exp(repeats=3):
         y_train = to_categorical(y_train)
 
         # Prepare testing data
-        X_test = test_inputs[test_tag_i]
+        accel_X_test = accel_test_inputs[test_tag_i]
+        uwb_X_test = uwb_test_inputs[test_tag_i]
         y_test = test_groundtruths[test_tag_i]
 
         y_test = to_categorical(y_test)
 
         # Train/Test split for data
         print("Training data shape: (X) (y)")
-        print(X_train.shape, y_train.shape)
+        print(accel_X_train.shape, uwb_X_train.shape, y_train.shape)
         print("Testing data shape: (X) (y)")
-        print(X_test.shape, y_test.shape)
+        print(accel_X_test.shape, uwb_X_test.shape, y_test.shape)
 
         print('Data loaded! Ready to train')
 
         # graph exp
-        graph_model(X_train, y_train, X_test, y_test)
+        # graph_model(X_train, y_train, X_test, y_test)
 
         # repeat experiment
         scores = list()
         for r in range(repeats):
-            score = build_model(X_train, y_train, X_test, y_test)
+            score = build_multihead_model(accel_X_train, uwb_X_train, y_train, accel_X_test, uwb_X_test, y_test)
             score = score * 100.0
             print('>#%d: %.3f' % (r+1, score))
             scores.append(score)
@@ -457,4 +449,4 @@ def run_wv_exp(repeats=3):
     print(f"OVERALL ACCURACY WAS {mean(accuracies)}")
 
 
-run_wv_exp()
+run_exp()
