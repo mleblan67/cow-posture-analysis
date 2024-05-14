@@ -52,12 +52,12 @@ def multihead_CNN(n_timesteps, n1_features, n2_features, n_outputs):
 
     # head 2: for uwb data
     inputs2 = Input(shape=(n_timesteps, n2_features))
-    conv20 = Conv1D(filters=32, kernel_size=4, activation='relu')(inputs2)
-    conv21 = Conv1D(filters=32, kernel_size=4, activation='relu')(conv20)
+    conv20 = Conv1D(filters=32, kernel_size=8, activation='relu')(inputs2)
+    conv21 = Conv1D(filters=32, kernel_size=8, activation='relu')(conv20)
     pool20 = MaxPooling1D(pool_size=2)(conv21)
     drop20 = Dropout(0.2)(pool20)
-    conv22 = Conv1D(filters=64, kernel_size=4, activation='relu')(drop20)
-    conv23 = Conv1D(filters=64, kernel_size=4, activation='relu')(conv22)
+    conv22 = Conv1D(filters=64, kernel_size=8, activation='relu')(drop20)
+    conv23 = Conv1D(filters=64, kernel_size=8, activation='relu')(conv22)
     pool21 = MaxPooling1D(pool_size=2)(conv23)
     drop21 = Dropout(0.2)(pool21)
     # flat2 = Flatten()(drop21)
