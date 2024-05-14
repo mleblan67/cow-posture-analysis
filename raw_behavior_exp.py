@@ -457,4 +457,4 @@ def run_wv_exp(repeats=3):
     print(f"OVERALL ACCURACY WAS {mean(accuracies)}")
 
 
-run_wv_exp()
+run_exp()
