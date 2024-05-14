@@ -1,7 +1,7 @@
 from tensorflow.keras import Input, Model
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
-from tensorflow.keras.layers import Flatten
+from tensorflow.keras.layers import Flatten, GlobalAveragePooling1D
 from tensorflow.keras.layers import Dropout
 from tensorflow.keras.layers import Conv1D, Conv2D
 from tensorflow.keras.layers import MaxPooling1D, MaxPooling2D
@@ -47,7 +47,8 @@ def multihead_CNN(n_timesteps, n1_features, n2_features, n_outputs):
     conv13 = Conv1D(filters=64, kernel_size=4, activation='relu')(conv12)
     pool11 = MaxPooling1D(pool_size=2)(conv13)
     drop11 = Dropout(0.2)(pool11)
-    flat1 = Flatten()(drop11)
+    # flat1 = Flatten()(drop11)
+    gap1 = GlobalAveragePooling1D()(drop11)
 
     # head 2: for uwb data
     inputs2 = Input(shape=(n_timesteps, n2_features))
@@ -59,10 +60,12 @@ def multihead_CNN(n_timesteps, n1_features, n2_features, n_outputs):
     conv23 = Conv1D(filters=64, kernel_size=4, activation='relu')(conv22)
     pool21 = MaxPooling1D(pool_size=2)(conv23)
     drop21 = Dropout(0.2)(pool21)
-    flat2 = Flatten()(drop20)
+    # flat2 = Flatten()(drop21)
+    gap2 = GlobalAveragePooling1D()(drop21)
         
     # merge
-    merged = concatenate([flat1, flat2])
+    # merged = concatenate([flat1, flat2])
+    merged = concatenate([gap1, gap2])
     # interpretation
     dense1 = Dense(100, activation='relu')(merged)
     outputs = Dense(n_outputs, activation='softmax')(dense1)
