@@ -5,7 +5,7 @@ from tensorflow.keras.layers import Flatten
 from tensorflow.keras.layers import Dropout
 from tensorflow.keras.layers import Conv1D, Conv2D
 from tensorflow.keras.layers import MaxPooling1D, MaxPooling2D
-from tensorflow.keras.layers.merge import concatenate
+from tensorflow.keras.layers import concatenate
 
 
 '''
