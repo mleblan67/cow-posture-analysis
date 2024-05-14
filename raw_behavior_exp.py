@@ -68,7 +68,7 @@ def build_multihead_model(trainX_accel, trainX_uwb, trainy, testX_accel, testX_u
     
     # evaluate model
     _, accuracy = model.evaluate(
-        [testX_accel, trainX_uwb], testy, batch_size=batch_size, verbose=0)
+        [testX_accel, testX_uwb], testy, batch_size=batch_size, verbose=0)
     
     # get_confusion_matrix(model, testX, testy)
     
