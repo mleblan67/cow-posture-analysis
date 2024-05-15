@@ -72,9 +72,9 @@ def build_multihead_model(trainX_accel, trainX_uwb, trainy, testX_accel, testX_u
         [testX_accel, testX_uwb], testy, batch_size=batch_size, verbose=0)
     
     # get_confusion_matrix(model, testX, testy)
-    # get_class_accuracies(model, testX_accel, testX_uwb, testy)
+    class_acc = get_class_accuracies(model, testX_accel, testX_uwb, testy)
     
-    return accuracy, f1_score
+    return accuracy, f1_score, class_acc
 
 def get_class_accuracies(model, accel_testX, uwb_testX, testy):
     y_pred = model.predict([accel_testX, uwb_testX])
@@ -94,8 +94,10 @@ def get_class_accuracies(model, accel_testX, uwb_testX, testy):
         acc_per_class[i] = true_positive / (true_positive + false_negative)
     
     # Print accuracy for each class
-    for i, acc in zip(range(num_classes), acc_per_class):
-        print(f"Class {i+1}: {acc:.2f}")
+    # for i, acc in zip(range(num_classes), acc_per_class):
+    #     print(f"Class {i+1}: {acc:.2f}")
+
+    return acc_per_class
 
 
 
@@ -275,16 +277,23 @@ def run_exp(repeats=3):
         # repeat experiment
         accuracies = list()
         f1_scores = list()
+        class_accuracies = np.zeros(7)
         print('      F1    \tAcc')
         for r in range(repeats):
-            acc, f1_score = build_multihead_model(accel_X_train, uwb_X_train, y_train, accel_X_test, uwb_X_test, y_test)
+            acc, f1_score, class_acc = build_multihead_model(accel_X_train, uwb_X_train, y_train, accel_X_test, uwb_X_test, y_test)
             acc = acc * 100.0
             f1_score = f1_score * 100.0
+            class_acc = class_acc * 100.0
             print('>#%d:  %.3f\t%.3f' % (r+1, acc, f1_score))
             accuracies.append(acc)
             f1_scores.append(f1_score)
-        # summarize results
-        print('      %.3f\t%.3f' % (mean(accuracies), mean(f1_scores)))
+            class_accuracies += class_acc
+        # model results
+        print('      %.3f\t%.3f\n' % (mean(accuracies), mean(f1_scores)))
+        # Class results
+        class_accuracies = class_accuracies / repeats
+        for class_i, acc in zip(range(7), class_accuracies):
+            print('Class %d: %.3f' % (class_i, acc))
 
 
 
