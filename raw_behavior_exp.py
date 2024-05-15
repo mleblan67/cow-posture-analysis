@@ -173,8 +173,8 @@ def run_exp(repeats=3):
 
         print(f"Loaded in tag {tag}")
         # Create sliding window
-        accel_X, y = create_rolling_window_data(accel_input_df, groundtruth_df, window_size=20, stride=10)
-        uwb_X, _ = create_rolling_window_data(uwb_input_df, groundtruth_df, window_size=20, stride=10)
+        accel_X, y = create_rolling_window_data(accel_input_df, groundtruth_df, window_size=10, stride=5)
+        uwb_X, _ = create_rolling_window_data(uwb_input_df, groundtruth_df, window_size=10, stride=5)
         print(f"Created Sliding window for tag {tag} \n")
 
         # Add to array
@@ -212,8 +212,8 @@ def run_exp(repeats=3):
 
         print(f"Loaded in tag {tag}")
         # Create sliding window
-        accel_X, y = create_rolling_window_data(accel_input_df, groundtruth_df, window_size=20, stride=10)
-        uwb_X, _ = create_rolling_window_data(uwb_input_df, groundtruth_df, window_size=20, stride=10)
+        accel_X, y = create_rolling_window_data(accel_input_df, groundtruth_df, window_size=10, stride=5)
+        uwb_X, _ = create_rolling_window_data(uwb_input_df, groundtruth_df, window_size=10, stride=5)
         print(f"Created Sliding window for tag {tag} \n")
 
         # Add to array
@@ -293,7 +293,7 @@ def run_exp(repeats=3):
         # Class results
         class_accuracies = class_accuracies / repeats
         for class_i, acc in zip(range(7), class_accuracies):
-            print('Class %d: %.3f' % (class_i, acc))
+            print('Class %d: %.3f' % (class_i+1, acc))
 
 
 
