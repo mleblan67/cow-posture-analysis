@@ -2,7 +2,7 @@ from tensorflow.keras import Input
 from tensorflow.keras import backend as K
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
-from tensorflow.keras.layers import Flatten
+from tensorflow.keras.layers import Flatten, GlobalAveragePooling1D
 from tensorflow.keras.layers import Dropout
 from tensorflow.keras.layers import Conv1D, Conv2D
 from tensorflow.keras.layers import MaxPooling1D, MaxPooling2D
@@ -30,7 +30,7 @@ def CNN(n_timesteps, n_features, n_outputs):
     model.add(MaxPooling1D(pool_size=2))
     model.add(Dropout(0.2))
 
-    model.add(Flatten())
+    model.add(GlobalAveragePooling1D)
     model.add(Dense(100, activation='relu'))
     model.add(Dense(n_outputs, activation='softmax'))
     model.compile(loss='categorical_crossentropy',
