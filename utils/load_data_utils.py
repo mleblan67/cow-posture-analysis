@@ -84,9 +84,10 @@ def create_rolling_window_data(input_df, groundtruth_df, window_size = 30, strid
         input_data_for_time_window = input_df.loc[(input_df['timestamp'] >= start_time) & (
             input_df['timestamp'] < end_time)]
         
-        unused_features = ['timestamp','mag_x_uT','mag_y_uT','mag_z_uT','pressure_Pa','elevation','coord_x_cm', 'coord_y_cm']
-        input_data_for_time_window = input_data_for_time_window.drop(
-                unused_features, axis=1)
+        # Drop columns that we don't want to use
+        unused_features = ['timestamp','mag_x_uT','mag_y_uT','mag_z_uT','pressure_Pa','elevation'] #,'coord_x_cm', 'coord_y_cm']
+        unused_cols = input_data_for_time_window.columns.intersection(unused_features)
+        input_data_for_time_window = input_data_for_time_window.drop(columns=unused_cols)
         
         # Get rid of empty windows
         if len(input_data_for_time_window) == 0:

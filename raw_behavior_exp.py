@@ -44,15 +44,16 @@ def build_model(trainX, trainy, testX, testy):
     # fit network
     model.fit(trainX, trainy, epochs=epochs,
               batch_size=batch_size, verbose=verbose,
-              validation_split=0.2, callbacks=[early_stop])
+              validation_split=0.3, callbacks=[early_stop])
     
     # evaluate model
-    _, accuracy = model.evaluate(
+    _, accuracy, f1_score = model.evaluate(
         testX, testy, batch_size=batch_size, verbose=0)
     
-    get_confusion_matrix(model, testX, testy)
+    # get_confusion_matrix(model, testX, testy)
+    class_acc = get_class_accuracies(model, testX, testy)
     
-    return accuracy
+    return accuracy, f1_score, class_acc
 
 def get_confusion_matrix(model, testX, testy):
     y_pred = model.predict(testX)
@@ -70,43 +71,28 @@ def get_confusion_matrix(model, testX, testy):
     plt.title('Confusion Matrix')
     plt.savefig('raw_accel_conf_matrix.png')
 
-def graph_model(trainX, trainy, testX, testy):
-    verbose, epochs, batch_size = 0, 10, 32
-    n_timesteps, n_features, n_outputs = trainX.shape[1], trainX.shape[2], trainy.shape[1]
-    n_batches = trainX.shape[0]
+def get_class_accuracies(model, testX, testy):
+    y_pred = model.predict(testX)
 
-    model = CNN(n_timesteps, n_features, n_outputs)
-    # model = CNN_LSTM(n_timesteps, n_features, n_outputs)
-    # fit network
-    model.fit(trainX, trainy, epochs=epochs,
-              batch_size=batch_size, verbose=verbose)
-    # evaluate model
-    # _, accuracy = model.evaluate(
-    #     testX, testy, batch_size=batch_size, verbose=0)
+    # One hot encoding back to single int
+    y_pred_classes = np.argmax(y_pred, axis=1)
+    y_test_classes = np.argmax(testy, axis=1)
+
+    conf_matrix = confusion_matrix(y_test_classes, y_pred_classes)
+
+    num_classes = conf_matrix.shape[0]
+    acc_per_class = np.zeros(num_classes)
     
-    predictions = model.predict(testX)
+    for i in range(num_classes):
+        true_positive = conf_matrix[i, i]
+        false_negative = np.sum(conf_matrix[i, :]) - true_positive
+        acc_per_class[i] = true_positive / (true_positive + false_negative)
+    
+    # Print accuracy for each class
+    # for i, acc in zip(range(num_classes), acc_per_class):
+    #     print(f"Class {i+1}: {acc:.2f}")
 
-    testy = [val[0] for val in testy]
-    predictions = [val[0] for val in predictions]
-
-    plt.plot(testy, label = "Groundtruth", color='blue', linestyle='solid')
-    plt.plot(predictions, label = "Prediction", color='red', linestyle='dashed')
-
-    plt.legend()
-    plt.xlabel("Time")
-    plt.ylabel("Standing")
-    plt.yticks([0,1], ["Sitting", "Standing"])
-
-    base = pd.to_datetime(1690261200.0, unit='s')
-    timestamp_list = [base + datetime.timedelta(minutes=x*5) for x in range(0,200,20)]
-    times = [f'{x.hour}:{str(x.minute).zfill(2)}' for x in timestamp_list]
-
-    plt.xticks(range(0,200,20), times)
-
-    plt.title('T07 07/25 UWB')
-
-    plt.savefig('UWB_Accuracies.png')
-    # return accuracy
+    return acc_per_class
 
 # summarize scores
 def summarize_results(scores):
@@ -162,7 +148,7 @@ def run_exp(repeats=3):
 
         print(f"Loaded in tag {tag}")
         # Create sliding window
-        X, y = create_rolling_window_data(input_df, groundtruth_df, window_size=20, stride=10)
+        X, y = create_rolling_window_data(input_df, groundtruth_df, window_size=10, stride=5)
         print(f"Created Sliding window for tag {tag} \n")
 
         # Add to array
@@ -199,7 +185,7 @@ def run_exp(repeats=3):
 
         print(f"Loaded in tag {tag}")
         # Create sliding window
-        X, y = create_rolling_window_data(input_df, groundtruth_df,window_size=20,stride=10)
+        X, y = create_rolling_window_data(input_df, groundtruth_df,window_size=10,stride=5)
         print(f"Created Sliding window for tag {tag} \n")
 
         # Add to array
@@ -252,22 +238,26 @@ def run_exp(repeats=3):
 
         print('Data loaded! Ready to train')
 
-        # graph exp
-        graph_model(X_train, y_train, X_test, y_test)
-
         # repeat experiment
-        scores = list()
+        accuracies = list()
+        f1_scores = list()
+        class_accuracies = np.zeros(7)
+        print('      F1    \tAcc')
         for r in range(repeats):
-            score = build_model(X_train, y_train, X_test, y_test)
-            score = score * 100.0
-            print('>#%d: %.3f' % (r+1, score))
-            scores.append(score)
-        # summarize results
-        m = summarize_results(scores)
-        accuracies.append(m)
-
-    print(f"OVERALL ACCURACY WAS {mean(accuracies)}")
-
+            acc, f1_score, class_acc = build_model(X_train, y_train, X_test, y_test)
+            acc = acc * 100.0
+            f1_score = f1_score * 100.0
+            class_acc = class_acc * 100.0
+            print('>#%d:  %.3f\t%.3f' % (r+1, acc, f1_score))
+            accuracies.append(acc)
+            f1_scores.append(f1_score)
+            class_accuracies += class_acc
+        # model results
+        print('      %.3f\t%.3f\n' % (mean(accuracies), mean(f1_scores)))
+        # Class results
+        class_accuracies = class_accuracies / repeats
+        for class_i, acc in zip(range(7), class_accuracies):
+            print('Class %d: %.3f' % (class_i+1, acc))
 
 
 def run_wv_exp(repeats=3):
