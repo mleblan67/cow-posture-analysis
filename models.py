@@ -30,7 +30,7 @@ def CNN(n_timesteps, n_features, n_outputs):
     model.add(MaxPooling1D(pool_size=2))
     model.add(Dropout(0.2))
 
-    model.add(GlobalAveragePooling1D)
+    model.add(GlobalAveragePooling1D())
     model.add(Dense(100, activation='relu'))
     model.add(Dense(n_outputs, activation='softmax'))
     model.compile(loss='categorical_crossentropy',
