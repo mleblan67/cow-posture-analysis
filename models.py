@@ -14,13 +14,8 @@ Runs two convolutions on the data
 '''
 def CNN(n_timesteps, n_features, n_outputs):
     model = Sequential()
-    model.add(Conv1D(filters=16, kernel_size=4, activation='relu',
+    model.add(Conv1D(filters=32, kernel_size=4, activation='relu',
               input_shape=(n_timesteps, n_features)))
-    model.add(Conv1D(filters=16, kernel_size=4, activation='relu'))
-    model.add(MaxPooling1D(pool_size=2))
-    model.add(Dropout(0.2))
-
-    model.add(Conv1D(filters=32, kernel_size=4, activation='relu'))
     model.add(Conv1D(filters=32, kernel_size=4, activation='relu'))
     model.add(MaxPooling1D(pool_size=2))
     model.add(Dropout(0.2))
@@ -29,6 +24,11 @@ def CNN(n_timesteps, n_features, n_outputs):
     model.add(Conv1D(filters=64, kernel_size=4, activation='relu'))
     model.add(MaxPooling1D(pool_size=2))
     model.add(Dropout(0.2))
+
+    # model.add(Conv1D(filters=64, kernel_size=4, activation='relu'))
+    # model.add(Conv1D(filters=64, kernel_size=4, activation='relu'))
+    # model.add(MaxPooling1D(pool_size=2))
+    # model.add(Dropout(0.2))
 
     model.add(GlobalAveragePooling1D())
     model.add(Dense(100, activation='relu'))
