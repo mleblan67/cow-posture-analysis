@@ -148,7 +148,7 @@ def run_exp(repeats=3):
 
         print(f"Loaded in tag {tag}")
         # Create sliding window
-        X, y = create_rolling_window_data(accel_input_df, groundtruth_df, window_size=10, stride=5)
+        X, y = create_rolling_window_data(uwb_input_df, groundtruth_df, window_size=10, stride=5)
         print(f"Created Sliding window for tag {tag} \n")
 
         # Add to array
@@ -185,7 +185,7 @@ def run_exp(repeats=3):
 
         print(f"Loaded in tag {tag}")
         # Create sliding window
-        X, y = create_rolling_window_data(accel_input_df, groundtruth_df,window_size=10,stride=5)
+        X, y = create_rolling_window_data(uwb_input_df, groundtruth_df,window_size=10,stride=5)
         print(f"Created Sliding window for tag {tag} \n")
 
         # Add to array
