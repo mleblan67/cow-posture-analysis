@@ -59,7 +59,7 @@ def create_rolling_window_data(input_df, groundtruth_df, window_size = 30, strid
     # Get base time difference size
     # Use 3 and 2 in case there is a problem with the first index
     groundtruth_base_time = groundtruth_df['Unixtime'][4] - groundtruth_df['Unixtime'][3]
-    print("Base time is: " + str(groundtruth_base_time))
+    # print("Base time is: " + str(groundtruth_base_time))
     input_base_time = input_df['timestamp'][4] - input_df['timestamp'][3]
 
     # Make the base time 5 minutes to make processing much faster

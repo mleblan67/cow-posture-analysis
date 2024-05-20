@@ -243,7 +243,16 @@ def run_exp(repeats=2):
         print("Testing data shape: (X) (y)")
         print(accel_X_test.shape, uwb_X_test.shape, y_test.shape)
 
-        print('Data loaded! Ready to train')
+        # BANDAID FIX for if number of samples is different
+        if accel_X_test.shape[0] > uwb_X_test.shape[0]:
+            accel_X_test = accel_X_test[:len(uwb_X_test)]
+            y_test = y_test[:len(uwb_X_test)]
+        elif accel_X_test.shape[0] < uwb_X_test.shape[0]:
+            uwb_X_test = uwb_X_test[:len(accel_X_test)]
+            y_test = y_test[:len(accel_X_test)]
+
+        if accel_X_test.shape[0] != uwb_X_test.shape[0]:
+            continue
 
         # repeat experiment
         accuracies = list()
