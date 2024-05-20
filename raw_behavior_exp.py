@@ -182,6 +182,8 @@ def run_exp(repeats=3):
         uwb_train_inputs.append(uwb_X)
         train_groundtruths.append(y)
 
+    '''
+    TRAIN AND TEST USES THE SAME DATA
 
     # Load in all the testing (just one day)
     for tag in test_tags:
@@ -220,7 +222,7 @@ def run_exp(repeats=3):
         accel_test_inputs.append(accel_X)
         uwb_test_inputs.append(uwb_X)
         test_groundtruths.append(y)
-
+    '''
 
     accuracies = []
     # Loop through every test tag to train on all other data and test on this one
@@ -257,9 +259,9 @@ def run_exp(repeats=3):
         y_train = to_categorical(y_train - 1, num_classes = 7)
 
         # Prepare testing data
-        accel_X_test = accel_test_inputs[test_tag_i]
-        uwb_X_test = uwb_test_inputs[test_tag_i]
-        y_test = test_groundtruths[test_tag_i]
+        accel_X_test = accel_train_inputs[test_tag_i]
+        uwb_X_test = uwb_train_inputs[test_tag_i]
+        y_test = train_groundtruths[test_tag_i]
 
         y_test = to_categorical(y_test - 1, num_classes = 7)
 
@@ -270,9 +272,6 @@ def run_exp(repeats=3):
         print(accel_X_test.shape, uwb_X_test.shape, y_test.shape)
 
         print('Data loaded! Ready to train')
-
-        # graph exp
-        # graph_model(X_train, y_train, X_test, y_test)
 
         # repeat experiment
         accuracies = list()
