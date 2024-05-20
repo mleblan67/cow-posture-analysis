@@ -72,9 +72,8 @@ def get_class_accuracies(model, accel_testX, uwb_testX, testy):
     # Print accuracy for each class
     # for i, acc in zip(range(num_classes), acc_per_class):
     #     print(f"Class {i+1}: {acc:.2f}")
-
-    np.nan_to_num(acc_per_class) # Make sure we have a number value for all classes
-    return acc_per_class
+    
+    return np.nan_to_num(acc_per_class) # Make sure we have a number value for all classes
 
 
 def get_confusion_matrix(model, testX, testy):
@@ -92,7 +91,7 @@ def get_confusion_matrix(model, testX, testy):
     plt.ylabel('True Labels')
     plt.title('Confusion Matrix')
     plt.savefig('raw_accel_conf_matrix.png')
-    
+
 
 def run_exp(repeats=2):
     accel_data_prefix = 'converted_data/'
