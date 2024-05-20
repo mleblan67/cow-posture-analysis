@@ -30,30 +30,6 @@ config.gpu_options.allow_growth = True
 session = InteractiveSession(config=config)
 
 
-# Train and evaluate a model
-def build_model(trainX, trainy, testX, testy):
-    early_stop = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
-
-    verbose, epochs, batch_size = 0, 15, 64
-    wv_x, wv_y, wv_channels, num_classes = trainX.shape[1], trainX.shape[2], trainX.shape[3], trainy.shape[1]
-    n_timesteps, n_features, n_outputs = trainX.shape[1], trainX.shape[2], trainy.shape[1]
-
-    model = CNN2D(wv_x, wv_y, wv_channels, num_classes)
-    # model = CNN(n_timesteps, n_features, n_outputs)
-
-    # fit network
-    model.fit(trainX, trainy, epochs=epochs,
-              batch_size=batch_size, verbose=verbose,
-              validation_split=0.3, callbacks=[early_stop])
-    
-    # evaluate model
-    _, accuracy = model.evaluate(
-        testX, testy, batch_size=batch_size, verbose=0)
-    
-    get_confusion_matrix(model, testX, testy)
-    
-    return accuracy
-
 def build_multihead_model(trainX_accel, trainX_uwb, trainy, testX_accel, testX_uwb, testy):
     early_stop = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
 
@@ -83,7 +59,7 @@ def get_class_accuracies(model, accel_testX, uwb_testX, testy):
     y_pred_classes = np.argmax(y_pred, axis=1)
     y_test_classes = np.argmax(testy, axis=1)
 
-    conf_matrix = confusion_matrix(y_test_classes, y_pred_classes)
+    conf_matrix = confusion_matrix(y_test_classes, y_pred_classes, labels=range(7))
 
     num_classes = conf_matrix.shape[0]
     acc_per_class = np.zeros(num_classes)
@@ -97,8 +73,8 @@ def get_class_accuracies(model, accel_testX, uwb_testX, testy):
     # for i, acc in zip(range(num_classes), acc_per_class):
     #     print(f"Class {i+1}: {acc:.2f}")
 
+    np.nan_to_num(acc_per_class) # Make sure we have a number value for all classes
     return acc_per_class
-
 
 
 def get_confusion_matrix(model, testX, testy):
@@ -116,23 +92,16 @@ def get_confusion_matrix(model, testX, testy):
     plt.ylabel('True Labels')
     plt.title('Confusion Matrix')
     plt.savefig('raw_accel_conf_matrix.png')
+    
 
-# summarize scores
-def summarize_results(scores):
-    print(scores)
-    m, s = mean(scores), std(scores)
-    print('Accuracy: %.3f%% (+/-%.3f)' % (m, s))
-
-    return m
-
-def run_exp(repeats=3):
+def run_exp(repeats=2):
     accel_data_prefix = 'converted_data/'
     uwb_data_prefix = 'location_data/'
 
     # The tag numbers we want to train on
-    train_tags = [1,2,3,4,5,8,9,10]
+    train_tags = [1,2,3,4,5,7,8,9,10]
     # The tag numbers we want to test on
-    test_tags = [7]
+    test_tags = [1,2,3,4,5,7,8,9,10]
 
     # Array of all the training data we load in from each tag
     accel_train_inputs = []
@@ -145,6 +114,7 @@ def run_exp(repeats=3):
 
 
     # Load in all the training
+    print("LOAD DATA")
     for tag in train_tags:
         # Build folder path
         accel_data_dir = accel_data_prefix + 'T' + str(tag).zfill(2) + '/'
@@ -171,16 +141,17 @@ def run_exp(repeats=3):
         # Combine all sensor data together
         # input_df = merge(accel_input_df, uwb_input_df, how='outer', on='timestamp')
 
-        print(f"Loaded in tag {tag}")
+        
         # Create sliding window
         accel_X, y = create_rolling_window_data(accel_input_df, groundtruth_df, window_size=10, stride=5)
         uwb_X, _ = create_rolling_window_data(uwb_input_df, groundtruth_df, window_size=10, stride=5)
-        print(f"Created Sliding window for tag {tag} \n")
 
         # Add to array
         accel_train_inputs.append(accel_X)
         uwb_train_inputs.append(uwb_X)
         train_groundtruths.append(y)
+
+        print(f"Loaded in tag {tag}")
 
     '''
     TRAIN AND TEST USES THE SAME DATA
@@ -224,10 +195,12 @@ def run_exp(repeats=3):
         test_groundtruths.append(y)
     '''
 
-    accuracies = []
     # Loop through every test tag to train on all other data and test on this one
+    print("\nTESTING")
+
+    overall_class_accuracies = np.zeros(7)
     for test_tag_i in range(len(test_tags)):
-        print(f"Testing on tag {test_tags[test_tag_i]}")
+        print(f"\nTesting on tag {test_tags[test_tag_i]}")
 
         # Prepare training data
         # Combine all training data
@@ -291,8 +264,12 @@ def run_exp(repeats=3):
         print('      %.3f\t%.3f\n' % (mean(accuracies), mean(f1_scores)))
         # Class results
         class_accuracies = class_accuracies / repeats
-        for class_i, acc in zip(range(7), class_accuracies):
-            print('Class %d: %.3f' % (class_i+1, acc))
+        print(class_accuracies)
+        overall_class_accuracies += class_accuracies
+
+
+    for class_i, acc in zip(range(7), overall_class_accuracies):
+        print('Class %d: %.3f' % (class_i+1, acc))
 
 
 
