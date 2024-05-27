@@ -1,5 +1,4 @@
 import os
-import gc
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' #Disable tensorflow debug info
 
 from numpy import mean
@@ -299,19 +298,12 @@ def run_exp(repeats=2):
         # One-hot encoding
         y_test = to_categorical(y_test - 1, num_classes = 7)
 
-
-        # Train/Test split for data
-        print("Training data shape: (X accel) (X uwb) (y)")
-        print(accel_X_train.shape, uwb_X_train.shape, y_train.shape)
-        print("Validation data shape: (X accel) (X uwb) (y)")
-        print(accel_X_val.shape, uwb_X_val.shape, y_val.shape)
-        print("Testing data shape: (X accel) (X uwb) (y)")
-        print(accel_X_test.shape, uwb_X_test.shape, y_test.shape)
-
         # BANDAID FIX for if number of samples is different
-        train_size = min(len(uwb_X_train),len(accel_X_train))
-        val_size = min(len(uwb_X_val),len(accel_X_val))
-        test_size = min(len(uwb_X_test),len(accel_X_test))
+        train_size = min(uwb_X_train.shape[0],accel_X_train.shape[0])
+        val_size = min(uwb_X_val.shape[0],accel_X_val.shape[0])
+        test_size = min(uwb_X_test.shape[0],accel_X_test.shape[0])
+
+        print("MIN", train_size)
 
         accel_X_train = accel_X_train[:train_size]
         y_train = y_train[:train_size]
@@ -321,6 +313,14 @@ def run_exp(repeats=2):
 
         accel_X_test = accel_X_test[:test_size]
         y_test = y_test[:test_size]
+
+        # Train/Test split for data
+        print("Training data shape: (X accel) (X uwb) (y)")
+        print(accel_X_train.shape, uwb_X_train.shape, y_train.shape)
+        print("Validation data shape: (X accel) (X uwb) (y)")
+        print(accel_X_val.shape, uwb_X_val.shape, y_val.shape)
+        print("Testing data shape: (X accel) (X uwb) (y)")
+        print(accel_X_test.shape, uwb_X_test.shape, y_test.shape)
 
 
         # repeat experiment
