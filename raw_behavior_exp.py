@@ -30,8 +30,13 @@ config.gpu_options.allow_growth = True
 session = InteractiveSession(config=config)
 
 
-def build_multihead_model(trainX_accel, trainX_uwb, trainy, testX_accel, testX_uwb, testy):
+def build_multihead_model(train_data: tuple, val_data: tuple, test_data: tuple):
     early_stop = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
+
+    # Unpack data
+    trainX_accel, trainX_uwb, trainy = train_data
+    valX_accel, valX_uwb, valy = val_data
+    testX_accel, testX_uwb, testy = test_data
 
     verbose, epochs, batch_size = 0, 15, 64
     n_timesteps, n1_features, n2_features, n_outputs = trainX_accel.shape[1], trainX_accel.shape[2], trainX_uwb.shape[2], trainy.shape[1]
@@ -39,9 +44,9 @@ def build_multihead_model(trainX_accel, trainX_uwb, trainy, testX_accel, testX_u
     model = multihead_CNN(n_timesteps, n1_features, n2_features, n_outputs)
 
     # fit network
-    model.fit([trainX_accel, trainX_uwb], trainy, epochs=epochs,
-              batch_size=batch_size, verbose=verbose,
-              validation_split=0.3, callbacks=[early_stop])
+    model.fit([trainX_accel, trainX_uwb], trainy, epochs=epochs, batch_size=batch_size,
+              verbose=verbose, callbacks=[early_stop], #shuffle=True,
+              validation_data = ([valX_accel, valX_uwb], valy))
     
     # evaluate model
     _, accuracy, f1_score = model.evaluate(
@@ -96,25 +101,26 @@ def get_confusion_matrix(model, testX, testy):
 def run_exp(repeats=2):
     accel_data_prefix = 'converted_data/'
     uwb_data_prefix = 'location_data/'
+    tags = [1,2,3,4,5,6,7,8,9,10]
 
     # The tag numbers we want to train on
-    train_tags = [1,2,3,4,5,7,8,9,10]
+    train_tags = [1,2,3,4,5,6]
+    # The tag numbers we want to use as validation
+    val_tags = [9,10]
+
+    # Use tuples to indicate combining tags
     # The tag numbers we want to test on
-    test_tags = [1,2,3,4,5,7,8,9,10]
+    test_tags = [(7,8)]
 
-    # Array of all the training data we load in from each tag
-    accel_train_inputs = []
-    uwb_train_inputs = []
-    train_groundtruths = []
-    # Array of all the testing data we load in from each tag
-    accel_test_inputs = []
-    uwb_test_inputs = []
-    test_groundtruths = []
-
+    # Pre define the arrays to hold data so the index of the
+    # data corresponds to the tag number it came from
+    accel_data = [list()] * (max(tags) + 1)
+    uwb_data = [list()] * (max(tags) + 1)
+    behavior_label = [list()] * (max(tags) + 1)
 
     # Load in all the training
     print("LOAD DATA")
-    for tag in train_tags:
+    for tag in tags:
         # Build folder path
         accel_data_dir = accel_data_prefix + 'T' + str(tag).zfill(2) + '/'
         uwb_data_dir = uwb_data_prefix + 'T' + str(tag).zfill(2) + '/'
@@ -140,15 +146,14 @@ def run_exp(repeats=2):
         # Combine all sensor data together
         # input_df = merge(accel_input_df, uwb_input_df, how='outer', on='timestamp')
 
-        
         # Create sliding window
         accel_X, y = create_rolling_window_data(accel_input_df, groundtruth_df, window_size=10, stride=5)
         uwb_X, _ = create_rolling_window_data(uwb_input_df, groundtruth_df, window_size=10, stride=5)
 
         # Add to array
-        accel_train_inputs.append(accel_X)
-        uwb_train_inputs.append(uwb_X)
-        train_groundtruths.append(y)
+        accel_data[tag] = accel_X
+        uwb_data[tag] = uwb_X
+        behavior_label[tag] = y
 
         print(f"Loaded in tag {tag}")
 
@@ -198,49 +203,109 @@ def run_exp(repeats=2):
     print("\nTESTING")
 
     overall_class_accuracies = np.zeros(7)
-    for test_tag_i in range(len(test_tags)):
-        print(f"\nTesting on tag {test_tags[test_tag_i]}")
+    for test_tuple in test_tags:
+        print(f"\nTesting on tag group of {str(test_tuple)}")
 
-        # Prepare training data
+        '''
+        Prepare TRAIN data
+        - All training data gets combined
+        '''
         # Combine all training data
         accel_X_train = np.array([])
         uwb_X_train = np.array([])
         y_train = np.array([])
 
-        for i in range(len(train_tags)):
+        for train_tag in train_tags:
             # Skip if this is the tag we're testing on
-            if train_tags[i] == test_tags[test_tag_i]:
+            if train_tag in test_tuple:
                 continue
-
-            # X_train += train_inputs[i]
-            # y_train += train_groundtruths[i]
-            if accel_X_train.shape[0] == 0:
-                accel_X_train = np.copy(accel_train_inputs[i])
-                uwb_X_train = np.copy(uwb_train_inputs[i])
-            else:
-                accel_X_train = np.vstack([accel_X_train, accel_train_inputs[i]])
-                uwb_X_train = np.vstack([uwb_X_train, uwb_train_inputs[i]])
             
-            if y_train.shape[0] == 0:
-                y_train = np.copy(train_groundtruths[i])
+            # Add sensor data
+            if accel_X_train.shape[0] == 0:
+                accel_X_train = np.copy(accel_data[train_tag])
+                uwb_X_train = np.copy(uwb_data[train_tag])
             else:
-                y_train = np.concatenate((y_train, train_groundtruths[i]))
+                accel_X_train = np.vstack([accel_X_train, accel_data[train_tag]])
+                uwb_X_train = np.vstack([uwb_X_train, uwb_data[train_tag]])
+            
+            # Add behavior label
+            if y_train.shape[0] == 0:
+                y_train = np.copy(behavior_label[train_tag])
+            else:
+                y_train = np.concatenate((y_train, behavior_label[train_tag]))
                 
-
         # One-hot encoding
         y_train = to_categorical(y_train - 1, num_classes = 7)
 
-        # Prepare testing data
-        accel_X_test = accel_train_inputs[test_tag_i]
-        uwb_X_test = uwb_train_inputs[test_tag_i]
-        y_test = train_groundtruths[test_tag_i]
 
+        '''
+        Prepare VALIDATION data
+        - All validation data gets combined
+        '''
+        # Combine all validation data
+        accel_X_val = np.array([])
+        uwb_X_val = np.array([])
+        y_val = np.array([])
+
+        # Make sure we're only validating with one group of tags
+        for val_tag in val_tags:
+            # Skip if this is the tag we're testing on
+            if val_tag in test_tuple:
+                continue
+            
+            # Add sensor data
+            if accel_X_val.shape[0] == 0:
+                accel_X_val = np.copy(accel_data[val_tag])
+                uwb_X_val = np.copy(uwb_data[val_tag])
+            else:
+                accel_X_val = np.vstack([accel_X_val, accel_data[val_tag]])
+                uwb_X_val = np.vstack([uwb_X_val, uwb_data[val_tag]])
+            
+            # Add behavior label
+            if y_val.shape[0] == 0:
+                y_val = np.copy(behavior_label[val_tag])
+            else:
+                y_val = np.concatenate((y_val, behavior_label[val_tag]))
+                
+        # One-hot encoding
+        y_val = to_categorical(y_val - 1, num_classes = 7)
+
+
+        '''
+        Prepare TESTING data
+        - All testing data in the TUPLE gets combined
+        '''
+        # Combine the testing data in the tuple
+        accel_X_test = np.array([])
+        uwb_X_test = np.array([])
+        y_test = np.array([])
+
+        # Make sure we're only validating with one group of tags
+        for test_tag in test_tuple:
+            # Add sensor data
+            if accel_X_test.shape[0] == 0:
+                accel_X_test = np.copy(accel_data[test_tag])
+                uwb_X_test = np.copy(uwb_data[test_tag])
+            else:
+                accel_X_test = np.vstack([accel_X_test, accel_data[test_tag]])
+                uwb_X_test = np.vstack([uwb_X_test, uwb_data[test_tag]])
+            
+            # Add behavior label
+            if y_test.shape[0] == 0:
+                y_test = np.copy(behavior_label[test_tag])
+            else:
+                y_test = np.concatenate((y_test, behavior_label[test_tag]))
+                
+        # One-hot encoding
         y_test = to_categorical(y_test - 1, num_classes = 7)
 
+
         # Train/Test split for data
-        print("Training data shape: (X) (y)")
+        print("Training data shape: (X accel) (X uwb) (y)")
         print(accel_X_train.shape, uwb_X_train.shape, y_train.shape)
-        print("Testing data shape: (X) (y)")
+        print("Validation data shape: (X accel) (X uwb) (y)")
+        print(accel_X_val.shape, uwb_X_val.shape, y_val.shape)
+        print("Testing data shape: (X accel) (X uwb) (y)")
         print(accel_X_test.shape, uwb_X_test.shape, y_test.shape)
 
         # BANDAID FIX for if number of samples is different
@@ -260,7 +325,9 @@ def run_exp(repeats=2):
         class_accuracies = np.zeros(7)
         print('      F1    \tAcc')
         for r in range(repeats):
-            acc, f1_score, class_acc = build_multihead_model(accel_X_train, uwb_X_train, y_train, accel_X_test, uwb_X_test, y_test)
+            acc, f1_score, class_acc = build_multihead_model((accel_X_train, uwb_X_train, y_train),
+                                                             (accel_X_val, uwb_X_val, y_val)
+                                                             (accel_X_test, uwb_X_test, y_test))
             acc = acc * 100.0
             f1_score = f1_score * 100.0
             class_acc = class_acc * 100.0
