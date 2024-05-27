@@ -101,7 +101,7 @@ def get_confusion_matrix(model, testX, testy):
 def run_exp(repeats=2):
     accel_data_prefix = 'converted_data/'
     uwb_data_prefix = 'location_data/'
-    data_bin_path = 'data.npy'
+    data_bin_path = 'data.npz'
     tags = [1,2,3,4,5,6,7,8,9,10]
 
     # The tag numbers we want to train on
