@@ -306,12 +306,15 @@ def run_exp(repeats=2):
         print("MIN", train_size)
 
         accel_X_train = accel_X_train[:train_size]
+        uwb_X_train = uwb_X_train[:train_size]
         y_train = y_train[:train_size]
 
         accel_X_val = accel_X_val[:val_size]
+        uwb_X_val = uwb_X_val[:val_size]
         y_val = y_val[:val_size]
 
         accel_X_test = accel_X_test[:test_size]
+        uwb_X_val = uwb_X_val[:val_size]
         y_test = y_test[:test_size]
 
         # Train/Test split for data
