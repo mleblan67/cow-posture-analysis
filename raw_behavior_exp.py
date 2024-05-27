@@ -309,15 +309,19 @@ def run_exp(repeats=2):
         print(accel_X_test.shape, uwb_X_test.shape, y_test.shape)
 
         # BANDAID FIX for if number of samples is different
-        if accel_X_test.shape[0] > uwb_X_test.shape[0]:
-            accel_X_test = accel_X_test[:len(uwb_X_test)]
-            y_test = y_test[:len(uwb_X_test)]
-        elif accel_X_test.shape[0] < uwb_X_test.shape[0]:
-            uwb_X_test = uwb_X_test[:len(accel_X_test)]
-            y_test = y_test[:len(accel_X_test)]
+        train_size = min(len(uwb_X_train),len(accel_X_train))
+        val_size = min(len(uwb_X_val),len(accel_X_val))
+        test_size = min(len(uwb_X_test),len(accel_X_test))
 
-        if accel_X_test.shape[0] != uwb_X_test.shape[0]:
-            continue
+        accel_X_train = accel_X_train[:train_size]
+        y_train = y_train[:train_size]
+
+        accel_X_val = accel_X_val[:val_size]
+        y_val = y_val[:val_size]
+
+        accel_X_test = accel_X_test[:test_size]
+        y_test = y_test[:test_size]
+
 
         # repeat experiment
         accuracies = list()
