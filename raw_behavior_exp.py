@@ -166,7 +166,7 @@ def run_exp(repeats=2):
 
     if os.path.isfile(data_bin_path):
         # Load in binary
-        npzfile = np.load(data_bin_path)
+        npzfile = np.load(data_bin_path, allow_pickle=True)
         accel_data = npzfile['accel']
         uwb_data = npzfile['uwb']
         behavior_label = npzfile['label']
