@@ -1,4 +1,5 @@
 import os
+import os.path
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' #Disable tensorflow debug info
 
 from numpy import mean
@@ -100,6 +101,7 @@ def get_confusion_matrix(model, testX, testy):
 def run_exp(repeats=2):
     accel_data_prefix = 'converted_data/'
     uwb_data_prefix = 'location_data/'
+    data_bin_path = 'data.npy'
     tags = [1,2,3,4,5,6,7,8,9,10]
 
     # The tag numbers we want to train on
@@ -120,6 +122,11 @@ def run_exp(repeats=2):
     # Load in all the training
     print("LOAD DATA")
     for tag in tags:
+        # See if the data is already saved
+        if os.path.isfile(data_bin_path):
+            print(f"Using data saved in {data_bin_path}")
+            break
+
         # Build folder path
         accel_data_dir = accel_data_prefix + 'T' + str(tag).zfill(2) + '/'
         uwb_data_dir = uwb_data_prefix + 'T' + str(tag).zfill(2) + '/'
@@ -156,47 +163,17 @@ def run_exp(repeats=2):
 
         print(f"Loaded in tag {tag}")
 
-    '''
-    TRAIN AND TEST USES THE SAME DATA
 
-    # Load in all the testing (just one day)
-    for tag in test_tags:
-        # Build folder path
-        accel_data_dir = accel_data_prefix + 'T' + str(tag).zfill(2) + '/'
-        uwb_data_dir = uwb_data_prefix + 'T' + str(tag).zfill(2) + '/'
-        groundtruth_dir = 'behavior_analysis/individual_behaviors/'
-
-        # Get all accelerometer sensor data files for this folder
-        accel_filepaths = os.listdir(accel_data_dir)
-        accel_filepaths = [accel_data_dir + file for file in accel_filepaths if file.startswith('sensor_data') and file.endswith('0725.csv')]
-        accel_filepaths.sort() # Make sure they're in order for processing
-
-        # Get all UWB sensor data files for this folder
-        uwb_filepaths = os.listdir(uwb_data_dir)
-        uwb_filepaths = [uwb_data_dir + file for file in uwb_filepaths if file.startswith('uwb_loc') and file.endswith('0725.csv')]
-        uwb_filepaths.sort() # Make sure they're in order for processing
-        
-        # Get groundtruth path
-        groundtruth_path = groundtruth_dir + 'C' + str(tag).zfill(2) + '_0725.csv'
-
-        # Load in both sensor data
-        accel_input_df, groundtruth_df = load_to_df(accel_filepaths, groundtruth_path)
-        uwb_input_df, _ = load_to_df(uwb_filepaths, groundtruth_path)
-
-        # Combine all sensor data together
-        # input_df = merge(accel_input_df, uwb_input_df, how='outer', on='timestamp')
-
-        print(f"Loaded in tag {tag}")
-        # Create sliding window
-        accel_X, y = create_rolling_window_data(accel_input_df, groundtruth_df, window_size=10, stride=5)
-        uwb_X, _ = create_rolling_window_data(uwb_input_df, groundtruth_df, window_size=10, stride=5)
-        print(f"Created Sliding window for tag {tag} \n")
-
-        # Add to array
-        accel_test_inputs.append(accel_X)
-        uwb_test_inputs.append(uwb_X)
-        test_groundtruths.append(y)
-    '''
+    if os.path.isfile(data_bin_path):
+        # Load in binary
+        npzfile = np.load(data_bin_path)
+        accel_data = npzfile['accel']
+        uwb_data = npzfile['uwb']
+        behavior_label = npzfile['label']
+    
+    else:
+        # Save data in file
+        np.savez(data_bin_path, accel=np.array(accel_data), uwb=np.array(uwb_data), label=np.array(behavior_label))
 
     # Loop through every test tag to train on all other data and test on this one
     print("\nTESTING")
@@ -302,8 +279,6 @@ def run_exp(repeats=2):
         train_size = min(uwb_X_train.shape[0],accel_X_train.shape[0])
         val_size = min(uwb_X_val.shape[0],accel_X_val.shape[0])
         test_size = min(uwb_X_test.shape[0],accel_X_test.shape[0])
-
-        print("MIN", train_size)
 
         accel_X_train = accel_X_train[:train_size]
         uwb_X_train = uwb_X_train[:train_size]
