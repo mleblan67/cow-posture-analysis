@@ -320,7 +320,7 @@ def run_exp(repeats=2):
             acc, f1_score, class_acc = build_multihead_model((accel_X_train, uwb_X_train, y_train),
                                                              (accel_X_val, uwb_X_val, y_val),
                                                              (accel_X_test, uwb_X_test, y_test),
-                                                             class_weights=class_weights)
+                                                             class_weights=class_weights_dict)
             acc = acc * 100.0
             f1_score = f1_score * 100.0
             class_acc = class_acc * 100.0
