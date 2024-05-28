@@ -46,7 +46,7 @@ def build_multihead_model(train_data: tuple, val_data: tuple, test_data: tuple, 
 
     # fit network
     model.fit([trainX_accel, trainX_uwb], trainy, epochs=epochs, batch_size=batch_size,
-              verbose=verbose, callbacks=[early_stop], #shuffle=True,
+              verbose=verbose, callbacks=[early_stop], shuffle=True,
               validation_data=([valX_accel, valX_uwb], valy),
               class_weight=class_weights)
     
@@ -100,7 +100,7 @@ def get_confusion_matrix(model, testX, testy):
     plt.savefig('raw_accel_conf_matrix.png')
 
 
-def run_exp(repeats=2):
+def run_exp(repeats=3):
     accel_data_prefix = 'converted_data/'
     uwb_data_prefix = 'location_data/'
     data_bin_path = 'data.npz'
