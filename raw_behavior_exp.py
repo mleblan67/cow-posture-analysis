@@ -309,7 +309,7 @@ def run_exp(repeats=3):
         # Class balancing
         true_labels_train = np.argmax(y_train, axis=1)
         class_weights = compute_class_weight('balanced', classes=np.unique(true_labels_train), y=true_labels_train)
-        class_weights_dict = {i: weight for i, weight in enumerate(class_weights)}
+        class_weights_dict = {i: weight/7 for i, weight in enumerate(class_weights)}
 
 
         accuracies = list()
