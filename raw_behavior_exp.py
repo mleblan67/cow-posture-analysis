@@ -46,11 +46,7 @@ def build_multihead_model(train_data: tuple, val_data: tuple, test_data: tuple, 
 
     # fit network
     model.fit([trainX_accel, trainX_uwb], trainy, epochs=epochs, batch_size=batch_size,
-<<<<<<< HEAD
-              verbose=verbose, callbacks=[early_stop], shuffle=True,
-=======
               verbose=verbose, callbacks=[early_stop],
->>>>>>> aa7c5e0eed123e91060b0a773935890a656cc2d5
               validation_data=([valX_accel, valX_uwb], valy),
               class_weight=class_weights)
     
