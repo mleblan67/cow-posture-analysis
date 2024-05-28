@@ -7,6 +7,7 @@ from numpy import std
 from numpy import asarray
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
+from sklearn.utils.class_weight import compute_class_weight
 from matplotlib import pyplot as plt
 from pandas import merge
 import pandas as pd
@@ -30,7 +31,7 @@ config.gpu_options.allow_growth = True
 session = InteractiveSession(config=config)
 
 
-def build_multihead_model(train_data: tuple, val_data: tuple, test_data: tuple):
+def build_multihead_model(train_data: tuple, val_data: tuple, test_data: tuple, class_weights: dict = None):
     early_stop = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
 
     # Unpack data
@@ -46,7 +47,8 @@ def build_multihead_model(train_data: tuple, val_data: tuple, test_data: tuple):
     # fit network
     model.fit([trainX_accel, trainX_uwb], trainy, epochs=epochs, batch_size=batch_size,
               verbose=verbose, callbacks=[early_stop], #shuffle=True,
-              validation_data = ([valX_accel, valX_uwb], valy))
+              validation_data=([valX_accel, valX_uwb], valy),
+              class_weight=class_weights)
     
     # evaluate model
     _, accuracy, f1_score = model.evaluate(
@@ -301,7 +303,15 @@ def run_exp(repeats=2):
         print(accel_X_test.shape, uwb_X_test.shape, y_test.shape)
 
 
-        # repeat experiment
+        '''
+        Run experiment
+        '''
+        # Class balancing
+        true_labels_train = np.argmax(y_train, axis=1)
+        class_weights = compute_class_weight('balanced', classes=np.unique(true_labels_train), y=true_labels_train)
+        class_weights_dict = {i: weight for i, weight in enumerate(class_weights)}
+
+
         accuracies = list()
         f1_scores = list()
         class_accuracies = np.zeros(7)
@@ -309,7 +319,8 @@ def run_exp(repeats=2):
         for r in range(repeats):
             acc, f1_score, class_acc = build_multihead_model((accel_X_train, uwb_X_train, y_train),
                                                              (accel_X_val, uwb_X_val, y_val),
-                                                             (accel_X_test, uwb_X_test, y_test))
+                                                             (accel_X_test, uwb_X_test, y_test),
+                                                             class_weights=class_weights)
             acc = acc * 100.0
             f1_score = f1_score * 100.0
             class_acc = class_acc * 100.0
