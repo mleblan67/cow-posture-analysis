@@ -48,8 +48,8 @@ def multihead_CNN(n_timesteps, n1_features, n2_features, n_outputs):
     conv13 = Conv1D(filters=64, kernel_size=4, activation='relu')(conv12)
     pool11 = MaxPooling1D(pool_size=2)(conv13)
     drop11 = Dropout(0.2)(pool11)
-    # flat1 = Flatten()(drop11)
     gap1 = GlobalAveragePooling1D()(drop11)
+    dense1 = Dense(100, activation='relu')(gap1)
 
     # head 2: for uwb data
     inputs2 = Input(shape=(n_timesteps, n2_features))
@@ -61,15 +61,12 @@ def multihead_CNN(n_timesteps, n1_features, n2_features, n_outputs):
     conv23 = Conv1D(filters=64, kernel_size=4, activation='relu')(conv22)
     pool21 = MaxPooling1D(pool_size=2)(conv23)
     drop21 = Dropout(0.2)(pool21)
-    # flat2 = Flatten()(drop21)
     gap2 = GlobalAveragePooling1D()(inputs2)
         
     # merge
-    # merged = concatenate([flat1, flat2])
-    merged = concatenate([gap1, gap2])
+    merged = concatenate([dense1, gap2])
     # interpretation
-    dense1 = Dense(100, activation='relu')(merged)
-    outputs = Dense(n_outputs, activation='softmax')(dense1)
+    outputs = Dense(n_outputs, activation='softmax')(merged)
     model = Model(inputs=[inputs1, inputs2], outputs=outputs)
 
     model.compile(loss='categorical_crossentropy',
