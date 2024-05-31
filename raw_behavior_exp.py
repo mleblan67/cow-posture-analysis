@@ -103,7 +103,7 @@ def get_confusion_matrix(model, testX, testy):
 def run_exp(repeats=3):
     accel_data_prefix = 'converted_data/'
     uwb_data_prefix = 'location_data/'
-    data_bin_path = 'data.npz'
+    data_bin_path = 'data_uwb_meters.npz'
     tags = [1,2,3,4,5,6,7,8,9,10]
 
     # The tag numbers we want to train on
@@ -150,6 +150,11 @@ def run_exp(repeats=3):
         # Load in both sensor data
         accel_input_df, groundtruth_df = load_to_df(accel_filepaths, groundtruth_path)
         uwb_input_df, _ = load_to_df(uwb_filepaths, groundtruth_path)
+
+        # Convert uwb from cm to m
+        uwb_input_df['coord_x_cm'] = uwb_input_df['coord_x_cm']/100
+        uwb_input_df['coord_y_cm'] = uwb_input_df['coord_y_cm']/100
+        uwb_input_df['coord_z_cm'] = uwb_input_df['coord_z_cm']/100
 
         # Combine all sensor data together
         # input_df = merge(accel_input_df, uwb_input_df, how='outer', on='timestamp')
