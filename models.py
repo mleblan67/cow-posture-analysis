@@ -62,10 +62,7 @@ def multihead_CNN(n_timesteps, n1_features, n2_features, n_outputs):
     pool21 = MaxPooling1D(pool_size=2)(conv23)
     drop21 = Dropout(0.2)(pool21)
     '''
-    conv20 = Conv1D(filters=32, kernel_size=4, activation='relu')(inputs2)
-    conv21 = Conv1D(filters=32, kernel_size=4, activation='relu')(conv20)
-    pool20 = MaxPooling1D(pool_size=2)(conv21)
-    gap2 = GlobalAveragePooling1D()(pool20)
+    gap2 = GlobalAveragePooling1D()(inputs2)
         
     # merge
     merged = concatenate([gap1, gap2])
